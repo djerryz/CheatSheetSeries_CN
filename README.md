@@ -1,4 +1,4 @@
-## OWASP安全速查表
+# OWASP安全速查表
 
 >  本仓库内容自[CheatSheetSeries](https://github.com/OWASP/CheatSheetSeries)项目翻译并分类而来，并在其基础上结合自身经验补充部分内容。
 
@@ -12,7 +12,7 @@ PDF: 待规划
 
 
 
-### 章节
+## 章节
 
 * 安全攻防
   * 业务功能
@@ -20,7 +20,7 @@ PDF: 待规划
   * 传统攻击
     * JAVA JWT
     * LDAP注入
-    * [AJAX安全](.\cheatsheets\AJAX_Security_Cheat_Sheet.md)
+    * [AJAX安全](./cheatsheets/AJAX_Security_Cheat_Sheet.md)
     * 点击劫持防御
     * XML实体防御
 
@@ -56,7 +56,7 @@ PDF: 待规划
 
 
 
-### 项目结构
+## 项目结构
 
 * 文章目录 cheatsheets
 * 草稿 cheatsheets_draft
@@ -66,12 +66,12 @@ PDF: 待规划
 
 
 
-### 翻译团队
+## 翻译团队
 
 * Djerryz
 
 
 
-### 建议与反馈
+## 建议与反馈
 
 任何翻译，文字语法上的错误，或者技术细节，欢迎提交issue进行探讨。
