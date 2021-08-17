@@ -1,108 +1,115 @@
-# AJAX Security Cheat Sheet
+# AJAX 安全
 
-## Introduction
+## 介绍
 
-This document will provide a starting point for AJAX security and will hopefully be updated and expanded reasonably often to provide more detailed information about specific frameworks and technologies.
+本文作为AJAX安全知识的启动，有望在后面进行持续的更新和拓展，以便对特定AJAX框架和技术提供更详细的信息。
 
-### Client Side (JavaScript)
+### 客户端 (JavaScript)
 
-#### Use .innerText instead of .innerHtml
+#### 使用.innerText 而非 .innerHtml
 
-The use of `.innerText` will prevent most XSS problems as it will automatically encode the text.
+使用 `.innerText` 将阻止大部分的XSS问题，因为其会自动对文本进行编码.
 
-#### Don't use eval
+> (D)注: 这儿应该是指HTML编码
 
-`eval()` function is evil, never use it. Needing to use eval usually indicates a problem in your design.
+#### 不要使用eval
 
-#### Canonicalize data to consumer (read: encode before use)
+`eval()` 函数是有害的，绝不应使用它。 当我们需要使用eval时，考虑下是不是你的设计存在问题。
 
-When using data to build HTML, script, CSS, XML, JSON, etc. make sure you take into account how that data must be presented in a literal sense to keep its logical meaning.
+#### 数据规范化 (read: 使用前进行编码)
 
-Data should be properly encoded before used in this manner to prevent injection style issues, and to make sure the logical meaning is preserved.
+当需要将数据用于构建HTML,script,CSS,XML.JSON,等内容时. 确保你考虑过数据必须表达出其本义并保持其逻辑意义
+
+在以这种方式使用之前，数据应该被正确的编码，以防止注入样式等问题，并确保保留逻辑意义。
 
 [Check out the OWASP Java Encoder Project.](https://owasp.org/www-project-java-encoder/)
 
-#### Don't rely on client logic for security
+#### 不依赖客户端的安全逻辑
 
-Least ye have forgotten the user controls the client side logic. I can use a number of browser plugins to set breakpoints, skip code, change values, etc. Never rely on client logic.
+似乎你忘记了，用户时可以控制客户端的逻辑的。我可以使用许多的浏览器插件去设置断点，代码跳过，数值变更，等等。不要依赖客户端的逻辑。
 
-#### Don't rely on client business logic
+#### 不依赖客户端的业务逻辑
 
-Just like the security one, make sure any interesting business rules/logic is duplicated on the server side less a user bypass needed logic and do something silly, or worse, costly.
+和上述安全逻辑一样，确保在服务端实现了真正的业务规则/逻辑，而不是让用户可以直接在客户端侧轻松的绕过逻辑检查以及做一些愚蠢，糟糕或代价高昂的事情。
 
-#### Avoid writing serialization code
+#### 避免编写序列化的代码
 
-This is hard and even a small mistake can cause large security issues. There are already a lot of frameworks to provide this functionality.
+实现起来很困难不是吗，而且一个小小的错误也可能导致严重的安全问题。好在已经有大量的框架来提供这一功能。
 
-Take a look at the [JSON page](http://www.json.org/) for links.
+链接参阅 [JSON page](http://www.json.org/) 。
 
-#### Avoid building XML or JSON dynamically
+#### 避免动态的构建XML和JSON
 
-Just like building HTML or SQL you will cause XML injection bugs, so stay way from this or at least use an encoding library or safe JSON or XML library to make attributes and element data safe.
+就像构建HTML和SQL一样，你的构建可能导致XML注入的bug，所以请远离这种设计或尝试使用编码库、安全的JSON或XML库实现构建，以确保数据中属性和元素的安全。
 
 - [XSS (Cross Site Scripting) Prevention](Cross_Site_Scripting_Prevention_Cheat_Sheet.md)
 - [SQL Injection Prevention](SQL_Injection_Prevention_Cheat_Sheet.md)
 
-#### Never transmit secrets to the client
+#### 不要向客户端传递机密数据
 
-Anything the client knows the user will also know, so keep all that secret stuff on the server please.
+客户端所能知道的任何数据，用户同样可以知道，所以请在服务端上保留所有这些机密的信息。
 
-#### Don't perform encryption in client side code
+#### 不要在客户端代码实现加密
 
-Use TLS/SSL and encrypt on the server!
+在服务器上使用TLS/SSL和加密！
 
-#### Don't perform security impacting logic on client side
+#### 不要在客户端执行影响安全性的逻辑
 
-This is the overall one that gets me out of trouble in case I missed something :)
+安全是一个整体，如果你不想陷入麻烦中，我想你不会去破坏安全逻辑。
 
-### Server Side
+### 服务端
 
-#### Use CSRF Protection
+#### 使用CSRF防护
 
-Take a look at the [Cross-Site Request Forgery (CSRF) Prevention](Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.md) cheat sheet.
+请参与 [Cross-Site Request Forgery (CSRF) Prevention](Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.md)
 
-#### Protect against JSON Hijacking for Older Browsers
+#### 注意在就浏览器上防御JSON劫持
 
-##### Review AngularJS JSON Hijacking Defense Mechanism
+##### 回顾Angular JSON劫持防御机制
 
-See the [JSON Vulnerability Protection](https://docs.angularjs.org/api/ng/service/$http#json-vulnerability-protection) section of the AngularJS documentation.
+参阅AngularJS文档的[JSON Vulnerability Protection](https://docs.angularjs.org/api/ng/service/$http#json-vulnerability-protection)章节。
 
-##### Always return JSON with an Object on the outside
+##### 返回的对象最外部始终为JSON结构
 
-Always have the outside primitive be an object for JSON strings:
+外部的原句为JSON字符对象:
 
-**Exploitable:**
+**可利用的**
+
+> (D)注: 最外部原句为list, 内部有JSON
 
 ```json
 [{"object": "inside an array"}]
 ```
 
-**Not exploitable:**
+**不可利用的:**
+
+> (D)注: 外部为JSON
 
 ```json
 {"object": "not inside an array"}
 ```
 
-**Also not exploitable:**
+**同样不可利用的:**
 
 ```json
 {"result": [{"object": "inside an array"}]}
 ```
 
-#### Avoid writing serialization code Server Side
+#### 避免在服务端上编写序列化代码
 
-Remember ref vs. value types! Look for an existing library that has been reviewed.
+记住ref 与 value的类型! 确保对已引入的库进行了了审核
 
-#### Services can be called by users directly
+#### 用户可以直接调用服务
 
-Even though you only expect your AJAX client side code to call those services the users can too.
+即使您只期望AJAX客户端代码可以调用对应的服务，但实际用户不借助AJAX客户端也可以调用这些服务。
 
-Make sure you validate inputs and treat them like they are under user control (because they are!).
+确保你验证了输入，并将调用一视同仁，正因他们都属于用户控制下的使用方式。
 
-#### Avoid building XML or JSON by hand, use the framework
+#### 避免手工构建XML或是JSON，请使用框架
 
-Use the framework and be safe, do it by hand and have security issues.
+使用框架更加安全，手动操作容易存在安全问题
 
-#### Use JSON And XML Schema for Webservices
+#### Webservices使用JSON和XML方案
 
-You need to use a third-party library to validate web services.
+您需要使用第三方库使得Webservices使用JSON和XML方案
+
