@@ -70,7 +70,7 @@
   * 通用
     * [输入验证](./cheatsheets/Input_Validation_Cheat_Sheet.md) - 1%
     * [错误处理](./cheatsheets/Error_Handling_Cheat_Sheet.md) - 1%
-    * [应用日志词汇表](./cheatsheets/Application_Logging_Vocabulary_Cheat_Sheet.md) - 1%
+    * [应用日志词汇表](./cheatsheets/Application_Logging_Vocabulary_Cheat_Sheet.md) - 100%
     * [日志机制](./cheatsheets/Logging_Cheat_Sheet.md) - 1%
     * [参数化查询](./cheatsheets/Query_Parameterization_Cheat_Sheet.md) - 1%
     * [安全断言标记语言(SAML)](./cheatsheets/SAML_Security_Cheat_Sheet.md) - 1%
@@ -130,9 +130,11 @@
 
 ## 更迭方案
 
-当前commit: Commits on Aug 16, 2021
+当前commit: Commits on Aug 16, 2021。
 
-以当前commit为起点，脚本检查cheatsheets, assets目录变更情况，人工对变更的文件和内容进行翻译与更新后，重置起点.
+以当前commit为起点，脚本检查cheatsheets, assets目录变更情况，人工对变更的文件和内容进行翻译与更新后，重置起点。
+
+文章中的"待规划" 代表原文该处标记未来补充或者和前面重复，后续大概率会更新的地方。
 
 
 
