@@ -20,8 +20,9 @@
 * 安全问题
   * 业务功能
     * [忘记密码](./cheatsheets/Forgot_Password_Cheat_Sheet.md) - 100%
-    * [选用安全问题](./cheatsheets/Choosing_and_Using_Security_Questions_Cheat_Sheet.md) - 1%
-    * [防范凭证填充](./cheatsheets/Credential_Stuffing_Prevention_Cheat_Sheet.md) - 1%
+    * [选用安全问题](./cheatsheets/Choosing_and_Using_Security_Questions_Cheat_Sheet.md) - 100%
+  * 枚举类
+    * [防范凭证填充(撞库)](./cheatsheets/Credential_Stuffing_Prevention_Cheat_Sheet.md) - 1%
   * 业务/权限逻辑
     * [防范不安全的直接对象引用(IDOR)](./cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.md) - 1%
   * 注入类
@@ -42,8 +43,7 @@
     * [防范服务端请求伪造(SSRF)](./cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.md) - 1%
     * [未验证的重定向和转发](./cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.md) - 1%
     * [防范XML外部实体(XXE)](./cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md) - 1%
-  * 其他
-    * [AJAX安全](./cheatsheets/AJAX_Security_Cheat_Sheet.md) - 100%
+  * 可用性
     * [拒绝服务](./cheatsheets/Denial_of_Service_Cheat_Sheet.md) - 1%
 * 防御措施
   * 数据
@@ -56,12 +56,15 @@
     * [Pinning](./cheatsheets/Pinning_Cheat_Sheet.md) - 1%
     * [TLS Cipher String](./cheatsheets/TLS_Cipher_String_Cheat_Sheet.md) - 1%
     * [传输层防护](./cheatsheets/Transport_Layer_Protection_Cheat_Sheet.md) - 1%
-  * 框架/架构
+  * 微服务
     * [微服务安全](./cheatsheets/Microservices_security.md) - 1%
     * [基于微服务的安全-Arch文档](./cheatsheets/Microservices_based_Security_Arch_Doc_Cheat_Sheet.md) - 1%
+  * 接口化数据交互
     * [GraphQL](./cheatsheets/[GraphQL_Cheat_Sheet.md](https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/GraphQL_Cheat_Sheet.md)) - 1%
+    * [AJAX安全](./cheatsheets/AJAX_Security_Cheat_Sheet.md) - 100%
     * [REST评估](./cheatsheets/REST_Assessment_Cheat_Sheet.md) - 1%
     * [REST安全](./cheatsheets/REST_Security_Cheat_Sheet.md) - 1%
+  * 架构
     * [软件定义基础架构(IaC)安全](./cheatsheets/Infrastructure_as_Code_Security_CheatSheet.md) - 1%
   * 供应链/包管理
     * [第三方JavaScript(依赖库)管理](./cheatsheets/Third_Party_Javascript_Management_Cheat_Sheet.md) - 1%
