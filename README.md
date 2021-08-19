@@ -19,7 +19,7 @@
 
 * 安全问题
   * 业务功能
-    * [忘记密码](./cheatsheets/Forgot_Password_Cheat_Sheet.md) - 1%
+    * [忘记密码](./cheatsheets/Forgot_Password_Cheat_Sheet.md) - 100%
     * [选用安全问题](./cheatsheets/Choosing_and_Using_Security_Questions_Cheat_Sheet.md) - 1%
     * [防范凭证填充](./cheatsheets/Credential_Stuffing_Prevention_Cheat_Sheet.md) - 1%
   * 业务/权限逻辑
