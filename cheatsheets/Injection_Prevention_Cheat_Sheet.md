@@ -1,14 +1,14 @@
-# Injection Prevention Cheat Sheet
+# 防范注入
 
-## Introduction
+## 介绍
 
-This article is focused on providing clear, simple, actionable guidance for preventing the entire category of Injection flaws in your applications. Injection attacks, especially [SQL Injection](https://owasp.org/www-community/attacks/SQL_Injection), are unfortunately very common.
+本文的重点是提供清晰、简单、可操作的指导，以防止应用程序中出现所有类型的注入缺陷。不幸的是,  注入攻击，尤其是[SQL注入](HTTPS:/OWASP.Org/WaveCalpIs/Atthasks/Sql注入)，是非常普遍存在的。 
 
-Application accessibility is a very important factor in protection and prevention of injection flaws. Only the minority of all applications within a company/enterprise are developed in house, where as most applications are from external sources. Open source applications give at least the opportunity to fix problems, but closed source applications need a different approach to injection flaws.
+应用程序可访问性是保护和预防注入缺陷需要考虑的一个非常重要的因素。公司/企业中只有少数应用程序是在内部开发的，而大多数应用程序都来自外部。开源应用程序至少提供了修复问题的机会，但闭源代码应用程序需要不同的方法来解决注入缺陷。
 
-Injection flaws occur when an application sends untrusted data to an interpreter. Injection flaws are very prevalent, particularly in legacy code, often found in SQL queries, LDAP queries, XPath queries, OS commands, program arguments, etc. Injection flaws are easy to discover when examining code, but more difficult via testing. Scanners and fuzzers can help attackers find them.
+当应用程序向解释器发送不受信任的数据时，就会出现注入缺陷。注入缺陷非常普遍，特别是在遗留代码中，通常在SQL查询、LDAP查询、XPath查询、操作系统命令、程序参数等中可以发现它们。在检查代码时很容易发现注入缺陷，但测试相较而言更难发现。扫描器和模糊测试工具可以帮助攻击者找到它们。
 
-Depending on the accessibility different actions must be taken in order to fix them. It is always the best way to fix the problem in source code itself, or even redesign some parts of the applications. But if the source code is not available or it is simply uneconomical to fix legacy software only virtual patching makes sense.
+为了确保可访问性， 必须采取不同的措施来修复这些问题。解决源代码本身的问题，甚至重新设计应用程序的某些部分，这始终是最好的方法。但是，如果源代码不可用，或者修复遗留软件的问题根本不经济，那么只有虚拟补丁才有意义。
 
 ## Application Types
 

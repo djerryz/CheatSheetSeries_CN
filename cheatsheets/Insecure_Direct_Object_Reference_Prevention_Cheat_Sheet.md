@@ -1,20 +1,20 @@
-# Insecure Direct Object Reference Prevention Cheat Sheet
+# 防范不安全的直接对象引用(IDOR)
 
-## Introduction
+## 介绍
 
-**I**nsecure **D**irect **O**bject **R**eference (called **IDOR** from here) occurs when a application exposes a reference to an internal implementation object. Using this way, it reveals the real identifier and format/pattern used of the element in the storage backend side. The most common example of it (although is not limited to this one) is a record identifier in a storage system (database, filesystem and so on).
+不安全的直接对象引用 (此处称**IDOR**) , 发生于应用程序对内部实现的对象进行引用时。 使用这种方式，它将展现存储于后端中元素的实际标识符和使用的格式/模式。最常见的例子（尽管不限于此）是存储系统（数据库、文件系统等）中的记录标识符。
 
-IDOR is referenced in element [A4](https://wiki.owasp.org/index.php/Top_10_2013-A4-Insecure_Direct_Object_References) of the OWASP Top 10 in the 2013 edition.
+在2013年版OWASP前10名中[A4](https://wiki.owasp.org/index.php/Top_10_2013-A4-Insecure_Direct_Object_References)中引用并阐述IDOR。
 
-## Context
+## 背景
 
-IDOR do not bring a direct security issue because, by itself, it reveals only the format/pattern used for the object identifier. IDOR bring, depending on the format/pattern in place, a capacity for the attacker to mount a enumeration attack in order to try to probe access to the associated objects.
+IDOR不会带来直接的安全问题，因为它本身只展示了用于对象标识符的格式/模式。IDOR根据对应的格式/模式，使攻击者拥有对其枚举攻击的能力，以便尝试探测对关联对象的访问。 
 
-Enumeration attack can be described in the way in which the attacker build a collection of valid identifiers using the discovered format/pattern and test them against the application.
+枚举攻击可以这样描述：攻击者通过发现的格式/模式，进而构建出有效标识符的集合，并针对应用程序进行测试。
 
-**For example:**
+**案例:**
 
-Imagine an HR application exposing a service accepting employee ID in order to return the employee information and for which the format/pattern of the employee ID is the following:
+假设一个HR应用程序接受服务的员工ID为参数，并以此返回员工信息，员工ID的格式/模式如下：
 
 ```text
 EMP-00000
@@ -23,40 +23,42 @@ EMP-00002
 ...
 ```
 
-Based on this, an attacker can build a collection of valid ID from *EMP-00000* to *EMP-99999*.
+基于此，攻击者可以构建从*EMP-00000*到*EMP-99999*的有效ID集合。
 
-To be exploited, an IDOR issue must be combined with an [Access Control](Access_Control_Cheat_Sheet.md) issue because it's the Access Control issue that "allows" the attacker to access the object for which they have guessed the identifier through the enumeration attack.
+要被利用，IDOR问题必须与[访问控制](./cheatsheets/Access_Control_Cheat_Sheet.md)问题相结合，因为攻击者通过枚举攻击猜出标识符, 并正是访问控制问题“允许”其可以访问标识符所对应的对象。
 
-## Additional remarks
+## 补充说明
 
-**From Jeff Williams**:
+**Jeff Williams**:
 
-Direct Object Reference is fundamentally a Access Control problem. We split it out to emphasize the difference between URL access control and data layer access control. You can't do anything about the data-layer problems with URL access control. And they're not really input validation problems either. But we see DOR manipulation all the time. If we list only "Messed-up from the Floor-up Access Control" then people will probably only put in SiteMinder or JEE declarative access control on URLs and call it a day. That's what we're trying to avoid.
+直接对象引用基本上是一个访问控制问题。我们将其拆分，以强调URL访问控制和数据层访问控制之间的区别。对于数据层使用URL进行访问控制的问题，您无能为力。它们也不是真正的输入验证问题。但我们一直看到DOR。如果我们只列出“从一开始就乱七八糟的访问控制”，那么人们可能只会在URL上添加SiteMinder或来JEE声明性访问控制，并就此结束。我们试图避免这样的情况。
 
-**From Eric Sheridan**:
+> 注: DOR 直接对象引用
 
-An object reference map is first populated with a list of authorized values which are temporarily stored in the session. When the user requests a field (ex: color=654321), the application does a lookup in this map from the session to determine the appropriate column name. If the value does not exist in this limited map, the user is not authorized. Reference maps should not be global (i.e. include every possible value), they are temporary maps/dictionaries that are only ever populated with authorized values.
+**Eric Sheridan**:
 
-"A direct object reference occurs when a developer exposes a reference to an internal implementation object, such as a file, directory, database record, or key, as a URL or form parameter."
+对象引用"映射"首先使用临时存储在会话中的授权值列表填充。用户请求一个字段（ex:color=654321）时，应用程序会从会话的"映射"中进行查找，以确定适当的列名。如果此受限的"映射"中不存在该值，则用户未被授权。引用"映射"不应是全局的（即包括所有可能的值），它们是临时"映射"/字典，仅使用授权值填充。
 
-I'm "down" with DOR's for files, directories, etc. But not so much for ALL databases primary keys. That's just insane, like you are suggesting. I think that anytime database primary keys are exposed, an access control rule is required. There is no way to practically DOR all database primary keys in a real enterprise or post-enterprise system.
+当开发人员将对内部实现对象（如文件、目录、数据库记录或密钥）的引用作为URL或表单参数展示(传递)时，会发生直接对象引用。
 
-But, suppose a user has a list of accounts, like a bank where database ID 23456 is their checking account. I'd DOR that in a heartbeat. You need to be prudent about this.
+我对文件、目录等使用DOR感到“失望”，但对所有数据库的主键却不是这样。就像你说的那样，这太疯狂了。我认为，只要数据库主键被公开(展现)，就需要访问控制规则。在真正的企业或后企业系统中，几乎无法避免DOR数据库主键。
 
-## Objective
+但是，假设用户有一个帐户列表，比如数据库ID23456是其支票帐户。我一下子就能DOR(指访问其银行账户)。你需要谨慎对待这件事。 
 
-This article propose an idea to prevent the exposure of real identifier in a simple, portable and stateless way because the proposal need to handle Session and Session-less application topologies.
+## 目标
 
-## Proposition
+本文提出了一种想法，以一种简单、可移植和无状态的方式防止直接展示和暴露真实标识符，该建议需要处理会话和无会话应用程序的拓扑。
 
-The proposal use a hash to replace the direct identifier. This hash is salted with a value defined at application level in order support topology in which the application is deployed in multi-instances mode (case for production).
+## 建议
 
-Using a hash allow the following properties:
+建议使用哈希(散列)替换直接标识符。为了支持应用程序以多实例模式部署的拓扑（用于生产），根据应用程序级别所定义的值进行哈希加"盐"。
 
-- Do not require to maintain a mapping table (real ID vs front end ID) in user session or application level cache.
-- Makes creation of a collection a enumeration values more difficult to achieve because, even if attacker can guess the hash algorithm from the ID size, it cannot reproduce value due to the salt that is not tied to the hidden value.
+哈希应有以下属性
 
-This is the implementation of the utility class that generate the identifier to use for exchange with the front end side:
+- 不需要在用户会话或应用程序级的缓存中去维护映射表（真实ID与前端ID）。
+- 使创建枚举集合变得更加困难，因为即使攻击者可以从ID长度猜测哈希算法，它也无法再现该值，因为"盐"不依赖于隐藏值。
+
+为前端生成用于对照映射的标识符-JAVA utility class实例:
 
 ``` java
 import javax.xml.bind.DatatypeConverter;
@@ -110,7 +112,7 @@ public class IDORUtil {
 }
 ```
 
-This is the example of services using the front identifier:
+前端使用标识符的服务示例：
 
 ``` java
 /**
@@ -175,7 +177,7 @@ public Movie obtainMovieName(@PathVariable("id") String id) {
 }
 ```
 
-This is the value object used:
+使用value object：
 
 ``` java
 public class Movie {
@@ -191,6 +193,6 @@ public class Movie {
 }
 ```
 
-## Sources of the prototype
+## 原型案例
 
 [GitHub repository](https://github.com/righettod/poc-idor).

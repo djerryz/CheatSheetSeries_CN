@@ -33,92 +33,98 @@
 
 此外，对于企业应用程序，可以将已知的受信任IP范围添加到允许列表中，以便用户从这些范围连接时不需要MFA。 
 
-## Alternative Defenses
+## 替代防御
 
-Where it is not possible to implement MFA, there are many alternative defenses that can be used to protect against credential stuffing and password spraying. In isolation none of these are as effective as MFA, however if multiple defenses are implemented in a layered approach, they can provide a reasonable degree of protection. In many cases, these mechanisms will also protect against brute-force or password spraying attacks.
+在不可能实现MFA的情况下，可以使用许多替代防御措施来防止凭证填充和密码喷洒。孤立地说，这些都不如MFA有效，但是如果以分层方式实施多重防御，它们可以提供合理程度的保护。在许多情况下，这些机制还可以防止暴力破解攻击。
 
-Where an application has multiple user roles, it may be appropriate to implement different defenses for different roles. For example, it may not be feasible to enforce MFA for all users, but it should be possible to require that all administrators use it.
+当应用程序具有多个用户角色时，可为不同的角色适配实施不同的防御。例如，对所有用户强制执行MFA可能不可行，但应该可以要求所有管理员使用它。 
 
 ### 辅助密码、PIN和安全问题
 
-As well as requiring a user to enter their password when authenticating, they can also be prompted to provide additional security information such as:
+除了要求用户在进行身份验证时输入密码外，还可以提示用户提供其他安全信息，例如：
 
-- A PIN
-- Specific characters from a secondary passwords or memorable word
-- Answers to [security questions](Choosing_and_Using_Security_Questions_Cheat_Sheet.md)
+- PIN码
+- 辅助密码或可记忆单词中的特定字符
+- 回答 [安全问题](./cheatsheets/Choosing_and_Using_Security_Questions_Cheat_Sheet.md) 
 
-It must be emphasised that this **does not** constitute multi-factor authentication (as both factors are the same - something you know). However, it can still provide a useful layer of protection against both credential stuffing and password spraying where proper MFA can't be implemented.
+必须强调的是，这并**不**能构成多因素身份验证（因为两个因素是相同的，即均基于验证你知道什么）。然而，在不能实现适当的MFA的情况下，它仍然可以提供一个有用的安全校验，防止凭证填充和密码喷洒。 
 
 ### 验证码
 
-Requiring a user to solve a CAPTCHA for each login attempt can help to prevent automated login attempts, which would significantly slow down a credential stuffing or password spraying attack. However, CAPTCHAs are not perfect, and in many cases tools exist that can be used to break them with a reasonably high success rate.
+要求用户在每次登录时尝试解决验证码问题，有助于防止自动化登录的尝试，这将大大降低凭证填充或密码喷洒攻击速度。然而，CAPTCHA并不是完美的，在许多情况下，可以使用工具以相当高的成功率突破CAPTCHA。
 
-To improve usability, it may be desirable to only require the user solve a CAPTCHA when the login request is considered suspicious, using the same criteria discussed above.
+为了提高可用性，仅需在认为登录请求可疑时，使用上面讨论的相同标准要求用户解决验证码挑战。
 
 ### IP禁用列表
 
-Less sophisticated attacks will often use a relatively small number of IP addresses, which can be block-listed after a number of failed login attempts. These failures should be tracked separately to the per-user failures, which are intended to protect against brute-force attacks. The block list should be temporary, in order to reduce the likelihood of permanently blocking legitimate users.
+不太复杂的攻击通常使用相对较少的IP地址，在多次登录尝试失败后，IP禁用列表可以列出这些攻击IP。 应单独跟踪到每个用户的登录失败事件，以防止暴力攻击。禁用列表应该是临时的，以减少永久禁用合法用户的可能性。 
 
-Additionally, there are publicly available block lists of known bad IP addresses which are collected by websites such as [AbuseIPDB](https://www.abuseipdb.com) based on abuse reports from users.
+此外，还有由[AbuseIPDB](https://www.abuseipdb.com)等网站收集了基于用户所报告的已知恶意IP地址，并将禁用列表公开给大众。
 
-Consider storing the last IP address which successfully logged in to each account, and if this IP address is added to a block list, then taking appropriate action such as locking the account and notifying the user, as it likely that their account has been compromised.
+考虑将每个帐户成功登录的最后IP地址进行存储，并且如果该IP地址在禁用IP列表范围内，则采取适当的行动，例如锁定帐户并通知用户，因为它们的帐户很可能受到了侵入。
 
 ### 设备指纹
 
-Aside from the IP address, there are a number of different factors that can be used to attempt to fingerprint a device. Some of these can be obtained passively by the server from the HTTP headers (particularly the "User-Agent" header), including:
+除IP地址之外，还有许多不同的元素可用于对设备进行指纹识别。服务器可以从HTTP头（特别是“User-Agent”头）被动地获取其中一些信息，包括： 
 
-- Operating system
-- Browser
-- Language
+- 操作系统
 
-Using JavaScript it is possible to access far more information, such as:
+- 浏览器
 
-- Screen resolution
-- Installed fonts
-- Installed browser plugins
+- 语言
 
-Using these various attributes, it is possible to create a fingerprint of the device. This fingerprint can then be matched against any browser attempting to login to the account, and if it doesn't match then the user can be prompted for additional authentication. Many users will have multiple devices or browsers that they use, so it is not practical to block attempts that do not match the existing fingerprints.
+使用JavaScript可以获取到更多信息，例如：
 
-The [fingerprintjs2](https://github.com/Valve/fingerprintjs2) JavaScript library can be used to carry out client-side fingerprinting.
+- 屏幕分辨率
+- 已安装字体
+- 已安装的浏览器插件
 
-It should be noted that as all this information is provided by the client, it can potentially be spoofed by an attacker. In some cases spoofing these attributes is trivial (such as the "User-Agent") header, but in other cases it may be more difficult to modify these attributes.
+使用这些不同的属性，可以创建设备对应的指纹。然后，可以将此指纹与尝试进行帐户登录所用的浏览器进行匹配，如果不匹配，则会提示用户进行其他身份验证。
+
+[fingerprintjs2](https://github.com/Valve/fingerprintjs2) 库可用于执行客户端指纹识别。 
+
+应该注意的是，由于所有这些信息都是由客户端提供的，因此攻击者可能会篡改这些信息。在某些情况下，篡改这些属性是容易实现的（例如“User-Agent”）头，但在其他情况下，修改某些属性可能较困难。
+
+> 注： JS相关算法计算出的属性修改较为困难，可能涉及到算法分析。 无论如何前端的数据均可篡改
 
 ### 要求不可预测的用户名
 
-Credential stuffing attacks rely on not just the re-use of passwords between multiple sites, but also the re-use of usernames. A significant number of websites use the email address as the username, and as most users will have a single email address they use for all their accounts, this makes the combination of an email address and password very effective for credential stuffing attacks.
+凭据填充攻击不仅依赖于在多个站点之间重复使用密码，还依赖于重复使用用户名。 大量网站使用电子邮件地址作为用户名，由于大多数用户的所有帐户都使用一个电子邮件地址，这使得电子邮件地址和密码的组合对于凭据填充攻击非常有效。
 
-Requiring users to create their own username when registering on the website makes it harder for an attacker to obtain valid username and password pairs for credential stuffing, as many of the available credential lists only include email addresses. Providing the user with a generated username can provide a higher degree of protection (as users are likely to choose the same username on most websites), but is user friendly. Additionally, care needs to be taken to ensure that the generated username is not predictable (such as being based on the user's full name, or sequential numeric IDs), as this could make enumerating valid usernames for a password spraying attack easier.
+要求用户在网站上注册时创建自己的用户名，使得攻击者更难获得有效的用户名和密码组合来填充凭据，因为许多可用的凭据列表只包含电子邮件地址。为用户提供自动生成的用户名可以提供更高程度的保护，因为用户为了方便会在大多数网站上选择相同的用户名。此外，需要注意确保生成的用户名是不可预测的，因为这可能使枚举有效用户名以进行密码攻击变得更容易（例如基于用户的全名或顺序数字ID）。 
 
 ## 纵深防御
 
-The following mechanisms are not sufficient to prevent credential stuffing or password spraying attacks; however they can be used to make the attacks more time consuming or technically difficult to implement. This can be useful to defend against opportunistic attackers, who use off-the-shelf tools and are likely to be discouraged by any technical barriers, but will not be sufficient against a more targeted attack.
+以下机制不足以防止凭证填充或密码喷洒攻击；但是，它们可使攻击更加耗时或在技术上难以实施。这有助于抵御机会主义攻击者，机会主义攻击者使用现成的工具，可能会受到技术障碍的阻碍，但这不足以抵御更具针对性的攻击。 
 
 ### 多步骤登录过程
 
-The majority of off-the-shelf tools are designed for a single step login process, where the credentials are POSTed to the server, and the response indicates whether or not the login attempt was successful. By adding additional steps to this process, such as requiring the username and password to be entered sequentially, or requiring that the user first obtains a random [CSRF Token](Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.md) before they can login, this makes the attack slightly more difficult to perform, and doubles the number of requests that the attacker must make.
+大多数现成工具都是为单步登录过程而设计的，其中凭据被传送给服务端，服务端响应登录尝试是否成功。通过在此过程中添加额外的步骤，例如要求按顺序输入用户名和密码，或要求用户在登录之前首先获得随机[CSRF Token](./cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.md) ，这会使得攻击更难执行，并使攻击者必须发出数倍的请求。 
 
 ### 要求可执行Javascript并禁用Headless浏览器
 
-Most tools used for these types of attacks will make direct POST requests to the server and read the responses, but will not download or execute JavaScript that was contained in them. By requiring the attacker to evaluate JavaScript in the response (for example to generate a valid token that must be submitted with the request), this forces the attacker to either use a real browser with an automation framework like Selenium or Headless Chrome, or to implement JavaScript parsing with another tool such as PhantomJS. Additionally, there are a number of techniques that can be used to identify [Headless Chrome](https://antoinevastel.com/bot%20detection/2018/01/17/detect-chrome-headless-v2.html) or [PhantomJS](https://blog.shapesecurity.com/2015/01/22/detecting-phantomjs-based-visitors/).
+用于此类攻击的大多数工具都会向服务器发出直接POST请求并读取响应，但不会下载或执行响应中包含的JavaScript。通过要求攻击者执行响应中的Javascript代码 (例如生成须随请求一起提交的有效令牌), 这迫使攻击者要么使用集成自动化框架（如Selenium或Headless Chrome）的真实浏览器，要么使用另一个工具（如PhantomJS）实现JavaScript解析。 此外，还有许多技术可用于识别 [Headless Chrome](https://antoinevastel.com/bot%20detection/2018/01/17/detect-chrome-headless-v2.html) 或 [PhantomJS](https://blog.shapesecurity.com/2015/01/22/detecting-phantomjs-based-visitors/).
 
-Please note that blocking visitors who have JavaScript disabled will reduce the accessibility of the website, especially to visitors who use screen readers. In certain jurisdictions this may be in breach of equalities legislation.
+请注意，阻止"禁用了JavaScript功能"的访问者将降低网站的可访问性，特别是对使用屏幕阅读器的访问者。在某些司法管辖区，这可能违反平等法。
+
+> 注: 还有可以通过下载JS,然后通过依赖库执行JS的情况，即完全不需要借助浏览器引擎，但该实施难度也较大，且一般涉及到对原有JS的输出改造
 
 ### 识别已泄露的密码 
 
-When a user sets a new password on the application, as well as checking it against a list of known weak passwords, it can also be checked against passwords that have previously been breached. The most well known public service for this is [Pwned Passwords](https://haveibeenpwned.com/Passwords). You can host a copy of the application yourself, or use the [API](https://haveibeenpwned.com/API/v2#PwnedPasswords).
+当用户在应用程序上设置新密码，并根据已知弱密码列表进行检查时，还可以根据以前被泄露的密码进行检查。这方面最著名的公共服务是[[Pwned Passwords](https://haveibeenpwned.com/Passwords)](https://haveibeenpwned.com/Passwords)。您可以本地化实现该服务，也可以直接使用其[API](https://haveibeenpwned.com/API/v2#PwnedPasswords).
 
-In order to protect the value of the source password being searched for, Pwned Passwords implements a [k-Anonymity model](https://en.wikipedia.org/wiki/K-anonymity) that allows a password to be searched for by partial hash. This allows the first 5 characters of a SHA-1 password hash to be passed to the API.
+为了保护正在被用于查询的源密码的值，Pwned Passwords实现了[k-匿名模型](https://en.wikipedia.org/wiki/K-anonymity) ，这允许通过部分哈希搜索密码。这也将允许密码进行SHA-1哈希后的前5个字符实现对API的调用。
 
 ### 通知用户异常安全事件
 
-When suspicious or unusual activity is detected, it may be appropriate to notify or warn the user. However, care should be taken that the user does not get overwhelmed with a large number of notifications that are not important to them, or they will just start to ignore or delete them.
+当检测到可疑或异常活动时，可能需要通知或警告用户。但是，应注意不要让用户被大量对他们不重要的通知淹没，否则他们会开始忽略或删除这些通知。 
 
-For example, it would generally not be appropriate to notify a user that there had been an attempt to login to their account with an incorrect password. However, if there had been a login with the correct password, but which had then failed the subsequent MFA check, the user should be notified so that they can change their password.
+例如，通常不适合通知用户有人试图使用错误的密码登录其帐户。但是，如果有使用正确密码的登录，但随后的MFA检查失败，则应通知用户，以便他们可以更改密码。
 
-Details related to current or recent logins should also be made visible to the user. For example, when they login to the application, the date, time and location of their previous login attempt could be displayed to them. Additionally, if the application supports concurrent sessions, the user should be able to view a list of all active sessions, and to terminate any other sessions that are not legitimate.
+与当前或最近登录相关的详细信息也应让用户可见。例如，当他们登录到应用程序时，可以向他们显示上次登录尝试(或登录成功)的日期、时间和位置。此外，如果应用程序支持并发会话，用户应该能够查看所有有效的会话的列表，并可终止任何其他不合法的会话。
 
 ## 引用
 
 - [OWASP Credential Stuffing Article](https://owasp.org/www-community/attacks/Credential_stuffing)
 - [OWASP Automated Threats to Web Applications](https://owasp.org/www-project-automated-threats-to-web-applications/)
-- Project: [OAT-008 Credential Stuffing](https://owasp.org/www-community/attacks/Credential_stuffing), which is one of 20 defined threats in the [OWASP Automated Threat Handbook](https://owasp.org/www-pdf-archive/Automated-threat-handbook.pdf) this project produced.
+- 项目: [OAT-008 Credential Stuffing](https://owasp.org/www-community/attacks/Credential_stuffing) 是 [OWASP Automated Threat Handbook](https://owasp.org/www-pdf-archive/Automated-threat-handbook.pdf) 定义的20种威胁之一
