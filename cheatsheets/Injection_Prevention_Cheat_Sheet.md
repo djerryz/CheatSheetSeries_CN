@@ -10,109 +10,109 @@
 
 为了确保可访问性， 必须采取不同的措施来修复这些问题。解决源代码本身的问题，甚至重新设计应用程序的某些部分，这始终是最好的方法。但是，如果源代码不可用，或者修复遗留软件的问题根本不经济，那么只有虚拟补丁才有意义。
 
-## Application Types
+## 程序类型
 
-Three classes of applications can usually be seen within a company. Those 3 types are needed to identify the actions which need to take place in order to prevent/fix injection flaws.
+在一家公司内通常可以看到三类应用程序。这三种类型用于确定预防/修复注入缺陷所需采取的措施。
 
-### A1: New Application
+### A1: 新程序
 
-A new web application in the design phase, or in early stage development.
+新的web应用程序处于设计阶段或早期开发阶段。
 
-### A2: Productive Open Source Application
+### A2: 生成环境下的开源程序
 
-An already productive application, which can be easily adapted. A Model-View-Controller (MVC) type application is just one example of having a easily accessible application architecture.
+一个已经生产的应用程序，可以很容易地进行调整。模型-视图-控制器（MVC）类型的应用程序是具有易于访问的应用程序体系结构的一个示例。
 
-### A3: Productive Closed Source Application
+### A3: 生成环境下的闭源程序
 
-A productive application which cannot or only with difficulty be modified.
+一种生产性应用程序，不能或很难修改。
 
-## Forms of Injection
+## 注入的多种形式
 
-There are several forms of injection targeting different technologies including SQL queries, LDAP queries, XPath queries and OS commands.
+有几种针对不同技术的注入形式，包括SQL查询、LDAP查询、XPath查询和OS命令。
 
-### Query languages
+### 查询语言
 
-The most famous form of injection is SQL Injection where an attacker can modify existing database queries. For more information see the [SQL Injection Prevention Cheat Sheet](SQL_Injection_Prevention_Cheat_Sheet.md).
+最著名的注入形式是SQL注入，攻击者通过注入修改现有的数据库查询。有关更多信息，请参阅[SQL注入预防备忘单](SQL_Injection_Prevention_Cheat_Sheet.md)。
 
-But also LDAP, SOAP, XPath and REST based queries can be susceptible to injection attacks allowing for data retrieval or control bypass.
+同样的，LDAP、SOAP、XPath和基于REST的查询也容易遭受数据检索或控制绕过的注入攻击。
 
-#### SQL Injection
+#### SQL注入
 
-An SQL injection attack consists of insertion or "injection" of either a partial or complete SQL query via the data input or transmitted from the client (browser) to the web application.
+SQL注入攻击通过数据输入，如从客户端（浏览器）传输到web应用程序，实现“注入”部分或完整的SQL查询。
 
-A successful SQL injection attack can read sensitive data from the database, modify database data (insert/update/delete), execute administration operations on the database (such as shutdown the DBMS), recover the content of a given file existing on the DBMS file system or write files into the file system, and, in some cases, issue commands to the operating system. SQL injection attacks are a type of injection attack, in which SQL commands are injected into data-plane input in order to affect the execution of predefined SQL commands.
+成功的SQL注入攻击可以从数据库读取敏感数据、修改数据库数据（插入/更新/删除）、对数据库执行管理操作（如关闭DBMS）、恢复DBMS文件系统上现有的给定文件的内容或将文件写入文件系统，在某些情况下，可以直接执行系统命令。SQL注入是注入攻击的一种，其中SQL命令被注入到数据层输入中，以影响预定义SQL命令的执行。 
 
-SQL Injection attacks can be divided into the following three classes:
+SQL注入攻击可分为以下三类：
 
-- **Inband:** data is extracted using the same channel that is used to inject the SQL code. This is the most straightforward kind of attack, in which the retrieved data is presented directly in the application web page.
-- **Out-of-band:** data is retrieved using a different channel (e.g., an email with the results of the query is generated and sent to the tester).
-- **Inferential or Blind:** there is no actual transfer of data, but the tester is able to reconstruct the information by sending particular requests and observing the resulting behavior of the DB Server.
+- **带内:** 使用和注入SQL代码的相同数据通道获取数据。这是最直接的攻击类型，其中检索到的数据直接返回在应用程序中。
+- **带外:** 使用不同的通道获取数据（例如，生成包含查询结果的电子邮件并发送给测试机）。
+- **推理或盲注:** 没有实际的数据传输，但测试人员可以通过发送特定请求并观察数据库服务器的结果行为来重建信息。
 
-##### How to test for the issue
+##### 如何发现该问题
 
-###### During code review
+###### 在代码评审期间
 
-please check for any queries to the database are not done via prepared statements.
+请检查对数据库的任何查询是否未通过预编译完成。
 
-If dynamic statements are being made please check if the data is sanitized before used as par of the statement.
+如果正在进行动态语句构造，请检查输入的数据是否被限定于语句的一部分，无法逃逸并产生额外的歧义。
 
-Auditors should always look for uses of sp_execute, execute or exec within SQL Server stored procedures. Similar audit guidelines are necessary for similar functions for other vendors.
+审核员应始终在SQL Server存储过程中查找sp_execute、execute或exec的用法。对于其他数据库的类似功能，需要类似的审核指南。
 
-###### Automated Exploitation
+###### 自动化测试
 
-Most of the situation and techniques below here can be performed in a automated way using some tools. In this article the tester can find information how to perform an automated auditing using [SQLMap](https://wiki.owasp.org/index.php/Automated_Audit_using_SQLMap)
+下面的大多数情况和技术都可以使用一些工具以自动化的方式执行。在本文中，测试人员可以找到如何使用[SQLMap](https://wiki.owasp.org/index.php/Automated_Audit_using_SQLMap)执行自动审计的信息。
 
-Equally Static Code Analysis Data flow rules can detect of unsanitized user controlled input can change the SQL query.
+同样静态的代码分析(SAST)数据流规则可以检测未初始化的用户控制输入是否可以改变SQL查询。
 
-###### Stored Procedure Injection
+###### 存储过程注入
 
-When using dynamic SQL within a stored procedure, the application must properly sanitize the user input to eliminate the risk of code injection. If not sanitized, the user could enter malicious SQL that will be executed within the stored procedure.
+在存储过程中使用动态SQL时，应用程序必须正确清理用户输入，以消除代码注入的风险。如果未进行清理，用户可能将在存储过程中输入并执行的恶意SQL。
 
-###### Time delay Exploitation technique
+###### 时延利用技术
 
-The time delay exploitation technique is very useful when the tester find a Blind SQL Injection situation, in which nothing is known on the outcome of an operation. This technique consists in sending an injected query and in case the conditional is true, the tester can monitor the time taken to for the server to respond. If there is a delay, the tester can assume the result of the conditional query is true. This exploitation technique can be different from DBMS to DBMS (check DBMS specific section).
+当测试人员发现盲SQL注入情况时，时延利用技术非常有用，即使这种情况无法直观获取注入结果。这种技术包括发送一个注入的查询，如果条件为true，测试人员可以监控服务器响应所需的时间。如果有延迟，测试人员可以假设条件查询的结果为真。这种利用技术在不同的DBMS中可能有所不同（请查看对应的DBMS特定部分）。
 
 ```text
 http://www.example.com/product.php?id=10 AND IF(version() like '5%', sleep(10), 'false'))--
 ```
 
-In this example the tester is checking whether the MySql version is 5.x or not, making the server delay the answer by 10 seconds. The tester can increase the delay time and monitor the responses. The tester also doesn't need to wait for the response. Sometimes they can set a very high value (e.g. 100) and cancel the request after some seconds.
+在本例中，测试人员正在检查MySql版本是否为5.x，若是，则服务器的响应将会延迟10秒进行。测试机可以增加延迟时间并监控响应。测试人员也不需要等待响应。有时，他们可以设置一个非常高的值（例如100），并在几秒钟后取消请求。 
 
-###### Out of band Exploitation technique
+###### 带外利用技术
 
-This technique is very useful when the tester find a Blind SQL Injection situation, in which nothing is known on the outcome of an operation. The technique consists of the use of DBMS functions to perform an out of band connection and deliver the results of the injected query as part of the request to the tester's server. Like the error based techniques, each DBMS has its own functions. Check for specific DBMS section.
+当测试人员发现盲SQL注入情况时，时延利用技术非常有用，即使这种情况无法直观获取注入结果。该技术包括使用DBMS函数来执行带外连接，并将注入查询的结果作为请求的一部分传递给测试人员的服务器。与基于错误的技术一样，每个DBMS都有自己的功能。检查特定的DBMS部分。
 
-##### Remediation
+##### 补救措施
 
-###### Defense Option 1: Prepared Statements (with Parameterized Queries)
+###### 防御选项1：预编译（通过参数化查询） 
 
-Prepared statements ensure that an attacker is not able to change the intent of a query, even if SQL commands are inserted by an attacker. In the safe example below, if an attacker were to enter the userID of `tom' or '1'='1`, the parameterized query would not be vulnerable and would instead look for a username which literally matched the entire string `tom' or '1'='1`.
+预编译可确保攻击者即使攻击者插入了SQL命令也无法更改查询的意图。在下面的安全示例中，如果攻击者输入用户名`tom' or '1'='1`，参数化查询将不会受到攻击，而是查找与与字符串`tom' or '1'='1`完全匹配的用户名。 
 
-###### Defense Option 2: Stored Procedures
+###### 防御选项2：存储过程
 
-The difference between prepared statements and stored procedures is that the SQL code for a stored procedure is defined and stored in the database itself, and then called from the application.
+预编译和存储过程之间的区别在于，存储过程的SQL代码被定义并存储在数据库本身中，然后从应用程序调用。
 
-Both of these techniques have the same effectiveness in preventing SQL injection so your organization should choose which approach makes the most sense for you. Stored procedures are not always safe from SQL injection. However, certain standard stored procedure programming constructs have the same effect as the use of parameterized queries when implemented safely* which is the norm for most stored procedure languages.
+这两种技术在防止SQL注入方面具有相同的效果，因此您的组织应该选择最适合您的方法。存储过程在SQL注入中并不总是安全的。但在安全实现方面，某些标准存储过程的编程构造与使用参数化查询具有相同的效果，这是大多数存储过程语言的标准。
 
-*Note:* 'Implemented safely' means the stored procedure does not include any unsafe dynamic SQL generation.
+*注意:* '安全实现'表示存储过程不包括任何不安全的动态SQL生成。
 
-###### Defense Option 3: Allow-List Input Validation
+###### 防御选项3：白名单输入验证
 
-Various parts of SQL queries aren't legal locations for the use of bind variables, such as the names of tables or columns, and the sort order indicator (ASC or DESC). In such situations, input validation or query redesign is the most appropriate defense. For the names of tables or columns, ideally those values come from the code, and not from user parameters.
+SQL查询无论哪个部分都不应作为变量拼接的合法位置，例如表或列的名称以及排序顺序指示符（ASC或DESC）。在这种情况下，输入验证或查询重新设计是最合适的防御措施。对于表或列的名称，理想情况下，这些值来自代码，而不是来自用户参数。
 
-But if user parameter values are used to make different for table names and column names, then the parameter values should be mapped to the legal/expected table or column names to make sure unvalidated user input doesn't end up in the query. Please note, this is a symptom of poor design and a full rewrite should be considered if time allows.
+但是，如果使用用户参数值使表名和列名不同，则参数值应映射到合法/预期的表名或列名，以确保未验证的用户输入不会在查询中存在。请注意，这是设计不佳的症状，如果时间允许，应考虑完全重写。
 
-###### Defense Option 4: Escaping All User-Supplied Input
+###### 防御选项4：转义所有用户提供的输入
 
-This technique should only be used as a last resort, when none of the above are feasible. Input validation is probably a better choice as this methodology is frail compared to other defenses and we cannot guarantee it will prevent all SQL Injection in all situations.
+只有在上述任何一项都不可行的情况下，才应将此技术用作最后手段。输入验证可能是一个更好的选择，因为与其他防御措施相比，这种方法是脆弱的，我们不能保证它在所有情况下都会阻止所有SQL注入。
 
-This technique is to escape user input before putting it in a query. It's usually only recommended to retrofit legacy code when implementing input validation isn't cost effective.
+这种技术是在将用户输入放入查询之前对其进行转义。改造遗留历史代码时，实现输入验证经济成本较高的情况下，可以考虑使用。
 
-##### Example code - Java
+##### 示例代码 - Java
 
-###### Safe Java Prepared Statement Example
+###### 安全的JAVA预编译示例
 
-The following code example uses a `PreparedStatement`, Java's implementation of a parameterized query, to execute the same database query.
+下面的代码示例使用`PreparedStatement`,Java下一种参数化查询的实现,来执行等价的数据库查询。
 
 ```java
 // This should REALLY be validated too
@@ -124,11 +124,11 @@ pstmt.setString(1, custname);
 ResultSet results = pstmt.executeQuery();
 ```
 
-We have shown examples in Java, but practically all other languages, including Cold Fusion, and Classic ASP, support parameterized query interfaces.
+我们已经展示了Java中的示例，但实际上所有其他语言，包括Cold Fusion和经典ASP，都支持参数化查询接口。 
 
-###### Safe Java Stored Procedure Example
+###### 安全的JAVA数据存储过程示例
 
-The following code example uses a `CallableStatement`, Java's implementation of the stored procedure interface, to execute the same database query. The `sp_getAccountBalance` stored procedure would have to be predefined in the database and implement the same functionality as the query defined above.
+下面的代码示例使用`CallableStatement`（存储过程接口的Java实现）来执行相同的数据库查询。须在数据库中预定义`sp_getAccountBalance`存储过程，并实现与上面定义的查询相同的功能。 
 
 ```java
 // This should REALLY be validated
@@ -143,59 +143,59 @@ try {
 }
 ```
 
-#### LDAP Injection
+#### LDAP注入
 
-LDAP Injection is an attack used to exploit web based applications that construct LDAP statements based on user input. When an application fails to properly sanitize user input, it's possible to modify LDAP statements through techniques similar to [SQL Injection](https://owasp.org/www-community/attacks/SQL_Injection). LDAP injection attacks could result in the granting of permissions to unauthorized queries, and content modification inside the LDAP tree. For more information on LDAP Injection attacks, visit [LDAP injection](https://owasp.org/www-community/attacks/LDAP_Injection).
+LDAP注入攻击，常出现于web的应用程序根据用户输入构造LDAP语句的场景。当应用程序无法正确清理用户输入时，可以通过类似于 [SQL Injection](https://owasp.org/www-community/attacks/SQL_Injection)的技术修改LDAP语句 LDAP注入攻击可导致向未经授权的查询授予权限，并在LDAP树中修改内容。有关LDAP注入攻击的更多信息，请访问 [LDAP injection](https://owasp.org/www-community/attacks/LDAP_Injection).
 
-[LDAP injection](https://owasp.org/www-community/attacks/LDAP_Injection) attacks are common due to two factors:
+[LDAP injection](https://owasp.org/www-community/attacks/LDAP_Injection)攻击很常见，原因有两个：
 
-1. The lack of safer, parameterized LDAP query interfaces
-2. The widespread use of LDAP to authenticate users to systems.
+1. 缺少更安全、参数化的LDAP查询接口
+2. 广泛使用LDAP对系统中的用户进行身份验证。
 
-##### How to test for the issue
+##### 如何发现该问题
 
-###### During code review
+###### 在代码评审期间
 
-Please check for any queries to the LDAP escape special characters, see [here](LDAP_Injection_Prevention_Cheat_Sheet.md#defense-option-1-escape-all-variables-using-the-right-ldap-encoding-function).
+请对LDAP的任何查询检查是否转义了特殊字符，请参阅 [here](LDAP_Injection_Prevention_Cheat_Sheet.md#defense-option-1-escape-all-variables-using-the-right-ldap-encoding-function).
 
-###### Automated Exploitation
+###### 自动化测试
 
-Scanner module of tool like OWASP [ZAP](https://www.zaproxy.org/) have module to detect LDAP injection issue.
+OWASP [ZAP](https://www.zaproxy.org/) 等工具，具有用于检测LDAP注入问题的扫描模块。
 
-##### Remediation
+##### 补救措施
 
-###### Escape all variables using the right LDAP encoding function
+###### 使用正确的LDAP编码函数转义所有变量
 
-The main way LDAP stores names is based on DN ([distinguished name](https://ldapwiki.com/wiki/Distinguished%20Names)). You can think of this like a unique identifier. These are sometimes used to access resources, like a username.
+LDAP存储名称的主要方式是基于DN（[可分辨名称](https://ldapwiki.com/wiki/Distinguished%20Names)). 您可以将其视为唯一标识符。它们有时用于访问资源，如用户名。
 
-A DN might look like this
+DN可能如下所示
 
 ```text
 cn=Richard Feynman, ou=Physics Department, dc=Caltech, dc=edu
 ```
 
-or
+或
 
 ```text
 uid=inewton, ou=Mathematics Department, dc=Cambridge, dc=com
 ```
 
-There are certain characters that are considered special characters in a DN. The exhaustive list is the following: `\ # + < > , ; " =` and leading or trailing spaces
+在DN中，某些字符被视为特殊字符。如：`\ # + < > , ; " =`和前导空格或尾随空格
 
-Each DN points to exactly 1 entry, which can be thought of sort of like a row in a RDBMS. For each entry, there will be 1 or more attributes which are analogous to RDBMS columns. If you are interested in searching through LDAP for users will certain attributes, you may do so with search filters. In a search filter, you can use standard boolean logic to get a list of users matching an arbitrary constraint. Search filters are written in Polish notation AKA prefix notation.
+每个DN正好指向一个条目，这有点像RDBMS中的一行。对于每个条目，将有一个或多个类似于RDBMS列的属性。如果您有兴趣通过LDAP搜索用户的某些属性，您可以使用搜索筛选器。在搜索筛选器中，您可以使用标准布尔逻辑获取与任意约束匹配的用户列表。搜索筛选器使用波兰语表示法（又称前缀表示法）编写。
 
-Example:
+例如：
 
 ```text
 (&(ou=Physics)(| (manager=cn=Freeman Dyson,ou=Physics,dc=Caltech,dc=edu)
 (manager=cn=Albert Einstein,ou=Physics,dc=Princeton,dc=edu) ))
 ```
 
-When building LDAP queries in application code, you MUST escape any untrusted data that is added to any LDAP query. There are two forms of LDAP escaping. Encoding for LDAP Search and Encoding for LDAP DN (distinguished name). The proper escaping depends on whether you are sanitizing input for a search filter, or you are using a DN as a username-like credential for accessing some resource.
+在应用程序代码中构建LDAP查询时，必须转义添加到任何LDAP查询中的任何不受信任的数据。LDAP转义有两种形式，编码LDAP查询和编码LDAP DN（可分辨名称）。正确的转义取决于您是正在清理搜索筛选器的输入，还是正在使用DN作为类用户名的凭据去访问某些资源。
 
-##### Example code - Java
+##### JAVA 示例
 
-###### Safe Java for LDAP escaping Example
+###### 安全的JAVA LDAP转义示例
 
 ```java
 public String escapeDN (String name) {
@@ -216,7 +216,7 @@ public String escapeDN (String name) {
 }
 ```
 
-Note, that the backslash character is a Java String literal and a regular expression escape character.
+请注意，反斜杠字符是Java字符串及正则表达式转义字符。
 
 ```java
 public String escapeSearchFilter (String filter) {
@@ -232,62 +232,61 @@ public String escapeSearchFilter (String filter) {
 }
 ```
 
-#### XPath Injection
+#### XPath注入
 
 TODO
 
-### Scripting languages
+### 脚本语言
 
-All scripting languages used in web applications have a form of an `eval` call which receives code at runtime and executes it. If code is crafted using unvalidated and unescaped user input code injection can occur which allows an attacker to subvert application logic and eventually to gain local access.
+web应用程序中使用的所有脚本语言都有一种形式的“eval”调用，它在运行时接收代码并执行。如果代码是使用未验证和未转义的用户输入构造而成的，则可能会发生代码注入，从而允许攻击者破坏应用程序逻辑并最终获得本地访问权限。
 
-Every time a scripting language is used, the actual implementation of the 'higher' scripting language is done using a 'lower' language like C. If the scripting language has a flaw in the data handling code '[Null Byte Injection](http://projects.webappsec.org/w/page/13246949/Null%20Byte%20Injection)' attack vectors can be deployed to gain access to other areas in memory, which results in a successful attack.
+每次使用脚本语言时，“高级”脚本语言的实际实现都是使用“低级”语言（如C）完成的。如果脚本语言在数据处理代码中有缺陷，'[空字节注入](http://projects.webappsec.org/w/page/13246949/Null%20Byte%20Injection)'攻击向量可被用来访问内存中的其他区域，从而导致成功的攻击。
 
-### Operating System Commands
+### 操作系统命令
 
-OS command injection is a technique used via a web interface in order to execute OS commands on a web server. The user supplies operating system commands through a web interface in order to execute OS commands.
+OS命令注入可以通过web界面实现在web服务器上执行OS命令的技术。用户通过web界面提供操作系统命令的功能以执行系统命令。
 
-Any web interface that is not properly sanitized is subject to this exploit. With the ability to execute OS commands, the user can upload malicious programs or even obtain passwords. OS command injection is preventable when security is emphasized during the design and development of applications.
+任何未正确净化的web界面都会受到此攻击。通过执行操作系统命令，用户可以上传恶意程序，甚至获取密码。当在应用程序的设计和开发过程中注重对应的安全性时，OS命令注入是可以预防的。
 
-#### How to test for the issue
+#### 如何发现该问题
 
-##### During code review
+##### 在代码评审期间
 
-Check if any command execute methods are called and in unvalidated user input are taken as data for that command.
+检查是否调用了任何命令执行方法，以及是否将未验证的用户输入作为该命令的数据。
 
-Out side of that, appending a semicolon to the end of a URL query parameter followed by an operating system command, will execute the command. `%3B` is URL encoded and decodes to semicolon. This is because the `;` is interpreted as a command separator.
+此外，在URL查询参数的末尾加上分号，然后再加上操作系统命令，将执行该命令。`%3B`是URL编码并解码为分号。这是因为`；`被解释为命令分隔符。
 
-Example: `http://sensitive/something.php?dir=%3Bcat%20/etc/passwd`
+例如：`http://sensitive/something.php?dir=%3Bcat%20/etc/passwd`
 
-If the application responds with the output of the `/etc/passwd` file then you know the attack has been successful. Many web application scanners can be used to test for this attack as they inject variations of command injections and test the response.
+如果应用程序以`/etc/passwd`文件的输出进行响应，那么您就知道攻击已经成功。许多web应用程序扫描程序都可以用来测试这种攻击，因为它们会注入各种命令并测试响应。
 
-Equally Static Code Analysis tools check the data flow of untrusted user input into a web application and check if the data is then entered into a dangerous method which executes the user input as a command.
+同样静态的代码分析工具检查不受信任的用户输入到web应用程序中的数据流，并检查数据是否随后输入到一个危险的方法中，该方法将用户输入作为命令执行。
 
-#### Remediation
+#### 补救措施
 
-If it is considered unavoidable the call to a system command incorporated with user-supplied, the following two layers of defense should be used within software in order to prevent attacks
+如果认为对用户提供系统命令的功能不可避免，则应在软件中使用以下两层防御措施，以防止攻击
 
-1. **Parameterization** - If available, use structured mechanisms that automatically enforce the separation between data and command. These mechanisms can help to provide the relevant quoting, encoding.
-2. **Input validation** - the values for commands and the relevant arguments should be both validated. There are different degrees of validation for the actual command and its arguments:
-    - When it comes to the **commands** used, these must be validated against a list of allowed commands.
-    - In regards to the **arguments** used for these commands, they should be validated using the following options:
-        - Positive or "allow list" input validation - where are the arguments allowed explicitly defined
-        - Allow-list Regular Expression - where is explicitly defined a list of good characters allowed and the maximum length of the string. Ensure that metacharacters like `& | ; $ > < \` \ !` and white-spaces are not part of the Regular Expression. For example, the following regular expression only allows lowercase letters and numbers, and does not contain metacharacters. The length is also being limited to 3-10 characters:
+1. **参数化** - 如果可用，请使用结构化机制自动强制执行数据和命令之间的分离。这些机制可以帮助提供相关的引用、编码。 
+2. **输入验证** - 应验证命令值和相关参数。命令及其参数的需要验证程度不同:
+    - 对于使用的**命令**，必须根据允许的命令列表对其进行验证
+    - 对于命令的**参数**，应使用以下选项对其进行验证：
+        - 正向或“白名单”输入验证 - 明确定义了允许的参数 Positive or "allow list" input validation - where are the arguments allowed explicitly defined
+        - 白名单正则表达式 - 其中显式定义了允许的良好字符列表和字符串的最大长度。确保像 **& | ; $ > < \` \ !** 这样的元字符不是正则表达式的一部分。例如，以下正则表达式只允许小写字母和数字，不包含元字符。长度也被限制为3-10个字符：`^[a-z0-9]{3,10}$`
+    - 对于命令的**参数值**, 应单引号包裹，并对变量里的单引号转义为 `\'\\\'\`  -- [D] (可以思考下为什么不是转义为`\'`, 后续有机会展开分享)
 
-`^[a-z0-9]{3,10}$`
+#### JAVA 示例
 
-#### Example code - Java
-
-##### Incorrect Usage
+##### 错误用法
 
 ```java
 ProcessBuilder b = new ProcessBuilder("C:\DoStuff.exe -arg1 -arg2");
 ```
 
-In this example, the command together with the arguments are passed as a one string, making easy to manipulate that expression and inject malicious strings.
+在本例中，命令和参数作为一个字符串传递，从而易于操作该表达式和注入的恶意字符串。 
 
-##### Correct Usage
+##### 正确用法
 
-Here is an example that starts a process with a modified working directory. The command and each of the arguments are passed separately. This make it easy to validated each term and reduces the risk to insert malicious strings.
+下面是改过的工作目录启动流程的示例。命令和每个参数分别传递。这使得验证每个术语变得容易，并降低了插入恶意字符串的风险。
 
 ```java
 ProcessBuilder pb = new ProcessBuilder("TrustedCmd", "TrustedArg1", "TrustedArg2");
@@ -296,25 +295,27 @@ pb.directory(new File("TrustedDir"));
 Process p = pb.start();
 ```
 
-### Network Protocols
+### 网络协议
 
-Web applications often communicate with network daemons (like SMTP, IMAP, FTP) where user input becomes part of the communication stream. Here it is possible to inject command sequences to abuse an established session.
+ Web应用程序通常与网络守护进程（如SMTP、IMAP、FTP）通信，其中用户输入成为通信流的一部分。在这里，可以注入命令序列来滥用已建立的会话。 
 
-## Injection Prevention Rules
+## 防御注入的规则
 
-### Rule \#1 (Perform proper input validation)
+### 规则 \#1 (执行正确的输入验证)
 
-Perform proper input validation. Positive or "allow list" input validation with appropriate canonicalization is also recommended, but **is not a complete defense** as many applications require special characters in their input.
+执行正确的输入验证。建议使用适当且规范化的“允许列表”(白名单)输入验证，注意，这**并不是一种完全的防御**，因为许多应用程序在其输入中需要特殊字符。
 
-### Rule \#2 (Use a safe API)
+### 规则 \#2 (使用安全的API)
 
-The preferred option is to use a safe API which avoids the use of the interpreter entirely or provides a parameterized interface. Be careful of APIs, such as stored procedures, that are parameterized, but can still introduce injection under the hood.
+这儿安全的API，可以泛化理解使用安全的函数，比如使用预编译查询函数就比拼接的字符串查询安全 --[D]
 
-### Rule \#3 (Contextually escape user data)
+首选安全的API，它完全避免直接使用解释器并提供参数化接口。小心某些API，例如存储过程，它们虽是参数化的，仍然可能在幕后引入注入问题。
 
-If a parameterized API is not available, you should carefully escape special characters using the specific escape syntax for that interpreter.
+### 规则\#3 (上下文转义用户数据)
 
-## Other Injection Cheatsheets
+如果参数化API不可用，则在使用该解释器之前对输入数据包含的特定转义语法和特殊字符进行仔细的转义。
+
+## 其他注入速查表
 
 [SQL Injection Prevention Cheat Sheet](SQL_Injection_Prevention_Cheat_Sheet.md)
 
