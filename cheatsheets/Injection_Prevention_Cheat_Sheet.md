@@ -286,7 +286,7 @@ ProcessBuilder b = new ProcessBuilder("C:\DoStuff.exe -arg1 -arg2");
 
 ##### 正确用法
 
-下面是改过的工作目录启动流程的示例。命令和每个参数分别传递。这使得验证每个术语变得容易，并降低了插入恶意字符串的风险。
+下面时更正后的工作目录启动流程的示例。命令和每个参数分别传递。这使得验证每个术语变得容易，并降低了插入恶意字符串的风险。
 
 ```java
 ProcessBuilder pb = new ProcessBuilder("TrustedCmd", "TrustedArg1", "TrustedArg2");

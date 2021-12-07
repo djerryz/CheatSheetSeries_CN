@@ -16,7 +16,7 @@
 
 > Total Docs: 73篇  **标记 [D] 为译者补充内容**
 >
-> 完成度: 5/73
+> 完成度: 6/73
 
 * 安全问题
   * 业务功能
@@ -28,8 +28,8 @@
     * [防范不安全的直接对象引用(IDOR)](./cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.md) - 100%
   * 注入类
     * [防范注入](./cheatsheets/Injection_Prevention_Cheat_Sheet.md) - 100%
-    * [LDAP注入](./cheatsheets/LDAP_Injection_Prevention_Cheat_Sheet.md) - 1%
-    * [OS命令注入](./cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.md) - 1%
+    * [防范LDAP注入](./cheatsheets/LDAP_Injection_Prevention_Cheat_Sheet.md) - 100%
+    * [防范OS命令注入](./cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.md) - 100%
     * [防范SQL注入](./cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.md) - 1%
   * 客户端/浏览器类
     * [点击劫持防御](./cheatsheets/Clickjacking_Defense_Cheat_Sheet.md) - 1%
