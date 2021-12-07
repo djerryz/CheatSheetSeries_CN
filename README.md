@@ -2,13 +2,13 @@
 
 Origin/原文: [CheatSheetSeries](https://github.com/OWASP/CheatSheetSeries).
 
-OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、开发、设计、SDL等多个方向的技术人员阅读。遂本项目决定对其进行完整的翻译，一来锻炼自己的英语能力，二来可以查漏补缺。
-
-项目的章节部分，在个人理解基础上原项目文章进行分类，这样可以快速透视全部知识点并便于后期整理与补充相关内容。Enjoy!
+OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、开发、设计、SDL等多个方向的技术人员阅读。遂决定对其进行完整的翻译，一来锻炼自己的英语能力，二来可以查漏补缺。Enjoy!
 
 
 
 ## 章节
+
+下面的分类基于个人理解，便于整理相关内容和透视知识点。 欢迎有不同的分类思考，文章若为肉，分类即为体，好的形体会带来新的认知和阅读体验。
 
 > Total Docs: 73篇  **标记 [D] 为译者补充内容 -- 个人认为欠缺或难于理解的部分**
 >
@@ -22,7 +22,7 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
   * 枚举
     * [防范凭证填充(撞库)](./cheatsheets/Credential_Stuffing_Prevention_Cheat_Sheet.md) - 100%
     
-    * [防范不安全的直接对象引用(IDOR)](./cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.md) - 100%
+    * [防范不安全的直接对象引用(IDOR)](./cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.md) - 100%, update 2021.12.07
     
   * 注入
     * [防范注入](./cheatsheets/Injection_Prevention_Cheat_Sheet.md) - 100%
@@ -159,7 +159,7 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
   
 * 安全合规
   * [用户隐私保护](./cheatsheets/User_Privacy_Protection_Cheat_Sheet.md) - 1%
-  * [D] 网络安全法 - 1%
+  * [D]网络安全法 - 1%
 
 
 
