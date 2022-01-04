@@ -1,14 +1,14 @@
-# XSS Filter Evasion Cheat Sheet
+# XSS过滤器绕过
 
-## Introduction
+## 介绍
 
 This article is focused on providing application security testing professionals with a guide to assist in Cross Site Scripting testing. The initial contents of this article were donated to OWASP by RSnake, from his seminal XSS Cheat Sheet, which was at: `http://ha.ckers.org/xss.html`. That site now redirects to its new home here, where we plan to maintain and enhance it. The very first OWASP Prevention Cheat Sheet, the [Cross Site Scripting Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html), was inspired by RSnake's XSS Cheat Sheet, so we can thank RSnake for our inspiration. We wanted to create short, simple guidelines that developers could follow to prevent XSS, rather than simply telling developers to build apps that could protect against all the fancy tricks specified in rather complex attack cheat sheet, and so the [OWASP Cheat Sheet Series](https://owasp.org/www-project-cheat-sheets/) was born.
 
-## Tests
+## 测试
 
 This cheat sheet lists a series of XSS attacks that can be used to bypass certain XSS defensive filters. Please note that input filtering is an incomplete defense for XSS which these tests can be used to illustrate.
 
-### Basic XSS Test Without Filter Evasion
+### 在不尝试绕过的情况下测试基础的XSS
 
 This is a normal XSS JavaScript injection, and most likely to get caught but I suggest trying it first (the quotes are not required in any modern browser so they are omitted here):
 

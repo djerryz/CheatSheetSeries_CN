@@ -1,14 +1,15 @@
-# Unvalidated Redirects and Forwards Cheat Sheet
+# 未验证的重定向和转发
 
-## Introduction
+## 介绍
 
-Unvalidated redirects and forwards are possible when a web application accepts untrusted input that could cause the web application to redirect the request to a URL contained within untrusted input. By modifying untrusted URL input to a malicious site, an attacker may successfully launch a phishing scam and steal user credentials.
+当web应用程序接受不受信任的输入时，可能会导致web应用程序将请求重定向到不受信任的的URL，实现未验证的重定向和转发。通过将站点重定向到不受信任的恶意URL，攻击者可以成功发起钓鱼欺诈并窃取用户凭据。
 
-Because the server name in the modified link is identical to the original site, phishing attempts may have a more trustworthy appearance. Unvalidated redirect and forward attacks can also be used to maliciously craft a URL that would pass the application's access control check and then forward the attacker to privileged functions that they would normally not be able to access.
 
-## Safe URL Redirects
+由于包含恶意URL的链接的域名与原始站点相同，因此从外观而言实现网络钓鱼会更可信。未经验证的重定向和转发攻击还可用于恶意访问URL，该URL将绕过应用程序的访问控制检查，然后将攻击者转发到他们通常无法访问的特权功能。
 
-When we want to redirect a user automatically to another page (without an action of the visitor such as clicking on a hyperlink) you might implement a code such as the following:
+## 安全的URL重定向
+
+当我们想要将用户自动的重定向到其他页面（没有访问者的动作，比如点击超链接），你通常可能按照如下的代码实现功能：
 
 Java
 
@@ -39,57 +40,60 @@ Rails
 redirect_to login_path
 ```
 
-In the examples above, the URL is being explicitly declared in the code and cannot be manipulated by an attacker.
+在上面的案例中，URL正在代码中显式声明，攻击者无法对其进行操作。
 
-## Dangerous URL Redirects
+## 危险的URL重定向
 
-The following examples demonstrate unsafe redirect and forward code.
+以下示例展示了不安全的重定向和转发的代码实现
 
-### Dangerous URL Redirect Example 1
+### 危险重定向案例-1
 
-The following Java code receives the URL from the parameter named `url` ([GET or POST](https://docs.oracle.com/javaee/7/api/javax/servlet/ServletRequest.html#getParameter-java.lang.String-)) and redirects to that URL:
+下面的Java代码从名为“URL”的参数接收URL（[GET或POST](https://docs.oracle.com/javaee/7/api/javax/servlet/ServletRequest.html#getParameter-java.lang.String-)）并重定向到该URL： 
 
 ```java
 response.sendRedirect(request.getParameter("url"));
 ```
 
-The following PHP code obtains a URL from the query string (via the parameter named `url`) and then redirects the user to that URL. Additionally, the PHP code after this `header()` function will continue to execute, so if the user configures their browser to ignore the redirect, they may be able to access the rest of the page.
+下面的PHP代码（通过名为“URL”的参数）从查询字符串中获取URL，然后将用户重定向到该URL。
+
+此外,如果用户将浏览器配置为忽略重定向 ,`header()`函数后面的PHP代码将继续执行，因此他们可能能够访问页面的其余部分。([D] 即访问php剩下的代码逻辑，场景的场景就是鉴权失败要跳到登陆页，这儿通过忽略可以继续往下走逻辑，应该是表达这个意思)
 
 ```php
 $redirect_url = $_GET['url'];
 header("Location: " . $redirect_url);
 ```
 
-A similar example of C\# .NET Vulnerable Code:
+C\# .NET 类似的漏洞代码:
 
 ```csharp
 string url = request.QueryString["url"];
 Response.Redirect(url);
 ```
 
-And in Rails:
+Rails下:
 
 ```ruby
 redirect_to params[:url]
 ```
 
-The above code is vulnerable to an attack if no validation or extra method controls are applied to verify the certainty of the URL. This vulnerability could be used as part of a phishing scam by redirecting users to a malicious site.
+如果没有验证或通过额外的控制方法来确认URL，则上述代码容易受到攻击。通过将用户重定向到恶意网站，此漏洞可被用作钓鱼欺诈的一部分。
 
-If no validation is applied, a malicious user could create a hyperlink to redirect your users to an unvalidated malicious website, for example:
+
+如果未实现验证功能，恶意用户可能会创建超链接，将用户重定向到未验证的恶意网站，例如：
 
 ```text
  http://example.com/example.php?url=http://malicious.example.com
 ```
 
-The user sees the link directing to the original trusted site (`example.com`) and does not realize the redirection that could take place
+用户看到指向原始受信任站点（`example.com`）的链接，但没有意识到一个被接管的重定向正在发生
 
-### Dangerous URL Redirect Example 2
+### 危险重定向案例-2
 
-[ASP .NET MVC 1 & 2 websites](https://docs.microsoft.com/en-us/aspnet/mvc/overview/security/preventing-open-redirection-attacks) are particularly vulnerable to open redirection attacks. In order to avoid this vulnerability, you need to apply MVC 3.
+基于[ASP .NET MVC 1 & 2](https://docs.microsoft.com/en-us/aspnet/mvc/overview/security/preventing-open-redirection-attacks)的站点，尤其容易受到开放重定向攻击。为了避免此漏洞，您需要使用MVC 3。
 
-The code for the LogOn action in an ASP.NET MVC 2 application is shown below. After a successful login, the controller returns a redirect to the returnUrl. You can see that no validation is being performed against the returnUrl parameter.
+ASP.NET MVC 2 开发的应用程序通常有如下登录操作的代码， 如下所示。成功登录后，控制器返回到returnUrl的重定向。您可以看到，没有对returnUrl参数执行任何验证。
 
-ASP.NET MVC 2 LogOn action in `AccountController.cs` (see Microsoft Docs link provided above for the context):
+ASP.NET MVC 2 登录操作 在`AccountController.cs`（有关上下文，请参阅上面提供的Microsoft文档链接）：
 
 ```csharp
 [HttpPost]
@@ -120,19 +124,22 @@ ASP.NET MVC 2 LogOn action in `AccountController.cs` (see Microsoft Docs link pr
  }
 ```
 
-### Dangerous Forward Example
+### 危险重定向案例-3
 
-When applications allow user input to forward requests between different parts of the site, the application must check that the user is authorized to access the URL, perform the functions it provides, and it is an appropriate URL request.
+当应用程序允许用户在站点的不同部分之间自定义转发请求时，应用程序必须检查用户是否有权访问URL，确保是适当的URL请求，再执行转发功能。
 
-If the application fails to perform these checks, an attacker crafted URL may pass the application's access control check and then forward the attacker to an administrative function that is not normally permitted.
 
-Example:
+如果应用程序未能执行这些检查，攻击者创建的URL可能会绕过应用程序的访问控制检查，然后将攻击者转发到通常不允许的管理功能。
+
+例如:
 
 ```text
 http://www.example.com/function.jsp?fwd=admin.jsp
 ```
 
-The following code is a Java servlet that will receive a `GET` request with a URL parameter named `fwd` in the request to forward to the address specified in the URL parameter. The servlet will retrieve the URL parameter value [from the request](https://docs.oracle.com/javaee/7/api/javax/servlet/ServletRequest.html#getParameter-java.lang.String-) and complete the server-side forward processing before responding to the browser.
+下面的代码是一个Java servlet，它将接收一个`GET`请求，包含名为`fwd`的URL参数，并将请求重定向到该参数值对应的地址。
+
+servlet [从请求中](https://docs.oracle.com/javaee/7/api/javax/servlet/ServletRequest.html#getParameter-java.lang.String-) 获取参数值，并在响应浏览器之前完成服务端处理转发的过程。
 
 ```java
 public class ForwardServlet extends HttpServlet
@@ -156,25 +163,25 @@ public class ForwardServlet extends HttpServlet
 }
 ```
 
-## Preventing Unvalidated Redirects and Forwards
+## 防范未验证的重定向和转发
 
-Safe use of redirects and forwards can be done in a number of ways:
+安全的使用重定向和转发可以通过多种方式实现：
 
-- Simply avoid using redirects and forwards.
-- If used, do not allow the URL as user input for the destination.
-- Where possible, have the user provide short name, ID or token which is mapped server-side to a full target URL.
-    - This provides the highest degree of protection against the attack tampering with the URL.
-    - Be careful that this doesn't introduce an enumeration vulnerability where a user could cycle through IDs to find all possible redirect targets
-- If user input can’t be avoided, ensure that the supplied **value** is valid, appropriate for the application, and is **authorized** for the user.
-- Sanitize input by creating a list of trusted URLs (lists of hosts or a regex).
-    - This should be based on an allow-list approach, rather than a block list.
-- Force all redirects to first go through a page notifying users that they are going off of your site, with the destination clearly displayed, and have them click a link to confirm.
+* 最简单的，避免使用重定向与转发
+* 如果使用，尽量不允许URL被用户可控
+* 在可能的情况下，让用户提供短名称、ID或令牌，并将其映射到服务器端对应的完整目标URL
+  * 这提供了最高程度的保护，以防止篡改URL攻击
+  * 请注意，这可能引入枚举漏洞，当用户通过循环查找所有可能的ID，发现对应的重定向目标 ([D] 原文是不会引入，我的尝试是没有实现IDOR防御则会引入)
+* 如果无法避免用户输入，请确保提供的**值**有效、适用于应用程序，并且对用户**授权**。
+* 通过创建受信任URL列表（主机列表或正则表达式）来清理输入。
+  * 这应该基于白名单方法，而不是黑名单。
+* 强制所有重定向之前通过一个页面，通知用户他们将离开您的站点，并清楚显示目的地，然后让他们单击一个链接进行确认。
 
-### Validating URLs
+### 验证URLs
 
-Validating and sanitising user-input to determine whether the URL is safe is not a trivial task. Detailed instructions how to implement URL validation is described [in Server Side Request Forgery Prevention Cheat Sheet](Server_Side_Request_Forgery_Prevention_Cheat_Sheet.md#application-layer)
+验证和清理用户输入以确定URL是否安全不是一项简单的任务。关于如何实现URL验证的详细说明，请参见 [in Server Side Request Forgery Prevention Cheat Sheet](Server_Side_Request_Forgery_Prevention_Cheat_Sheet.md#application-layer)
 
-## References
+## 参考
 
 - [CWE Entry 601 on Open Redirects](http://cwe.mitre.org/data/definitions/601.html).
 - [WASC Article on URL Redirector Abuse](http://projects.webappsec.org/w/page/13246981/URL%20Redirector%20Abuse)
