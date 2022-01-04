@@ -12,7 +12,7 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
 
 >Total Docs: 73篇
 >
->Finish: 8篇
+>Finish: 9篇
 
 下面的分类基于个人认知，为了方便整理相关内容和透视知识点。 
 
@@ -56,7 +56,7 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
   * 典型问题
 
     * [自动绑定(变量覆盖)](./cheatsheets/Mass_Assignment_Cheat_Sheet.md) - 1%
-    * [未验证的重定向和转发](./cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.md) - 1%
+    * [防范未验证的重定向和转发](./cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.md) - 100%
     * [防范XML外部实体(XXE)](./cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md) - 1%
 
 * 设计安全
