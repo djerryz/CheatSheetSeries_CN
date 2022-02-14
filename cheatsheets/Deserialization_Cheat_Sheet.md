@@ -1,40 +1,40 @@
-# Deserialization Cheat Sheet
+# 反序列化
 
-## Introduction
+## 介绍
 
-This article is focused on providing clear, actionable guidance for safely deserializing untrusted data in your applications.
+ 本文的重点是 为安全地反序列化应用程序中不受信任的数据 提供清晰、可操作的指导。
 
-## What is Deserialization
+## 什么是反序列化
 
-**Serialization** is the process of turning some object into a data format that can be restored later. People often serialize objects in order to save them to storage, or to send as part of communications.
+**序列化** 是将某个对象转换为数据格式的过程，以后可以恢复。人们经常序列化对象，以便将其保存到存储器中，或作为通信的一部分发送。
 
-**Deserialization** is the reverse of that process, taking data structured from some format, and rebuilding it into an object. Today, the most popular data format for serializing data is JSON. Before that, it was XML.
+**反序列化** 与此相反，从某种格式获取结构化数据，并将其重建为对象。如今，序列化数据最流行的数据格式是JSON。在此之前，它是XML。
 
-However, many programming languages offer a native capability for serializing objects. These native formats usually offer more features than JSON or XML, including customizability of the serialization process.
+然而，许多编程语言提供了序列化对象的原生机制。这些原生格式通常比JSON或XML提供更多功能，包括序列化过程的可定制性。
 
-Unfortunately, the features of these native deserialization mechanisms can be repurposed for malicious effect when operating on untrusted data. Attacks against deserializers have been found to allow denial-of-service, access control, and remote code execution (RCE) attacks.
+不幸的是，在对不受信任的数据进行操作时，这些原生反序列化机制的功能可能会被重用于实现恶意功能。已发现针对反序列化程序的攻击允许拒绝服务、访问控制和远程代码执行（RCE）攻击。
 
-## Guidance on Deserializing Objects Safely
+## 关于安全地反序列化对象的指导
 
-The following language-specific guidance attempts to enumerate safe methodologies for deserializing data that can't be trusted.
+以下特定于语言的指南试图列举用于反序列化不可信数据的安全方法。
 
 ### PHP
 
-#### WhiteBox Review
+#### 白盒审计
 
-Check the use of [unserialize()](https://www.php.net/manual/en/function.unserialize.php) function and review how the external parameters are accepted. Use a safe, standard data interchange format such as JSON (via `json_decode()` and `json_encode()`) if you need to pass serialized data to the user.
+审计unserialize()的使用情况，并检查是如何接受外部参数的。如果需要将序列化数据传递给用户，请使用安全的标准数据交换格式，如JSON（通过`json_decode()`和`json_encode()`）。
 
 ### Python
 
-#### BlackBox Review
+#### 黑盒审计
 
-If the traffic data contains the symbol dot `.` at the end, it's very likely that the data was sent in serialization.
+如果数据流量的最后包含符号点`.`，数据很可能是以序列化的方式发送的。
 
-#### WhiteBox Review
+#### 白盒审计
 
-The following API in Python will be vulnerable to serialization attack. Search code for the pattern below.
+Python中的以下API易受序列化攻击，按照如下模板检索代码：
 
-1. The uses of `pickle/c_pickle/_pickle` with `load/loads`:
+1. `pickle/c_pickle/_pickle` 配合`load/loads`使用:
 
 ```python
 import pickle
@@ -42,7 +42,7 @@ data = """ cos.system(S'dir')tR. """
 pickle.loads(data)
 ```
 
-2. Uses of `PyYAML` with `load`:
+2. `PyYAML` 配合`load`使用:
 
 ```python
 import yaml
@@ -50,48 +50,48 @@ document = "!!python/object/apply:os.system ['ipconfig']"
 print(yaml.load(document))
 ```
 
-3. Uses of `jsonpickle` with `encode` or `store` methods.
+3. `jsonpickle` 配合`encode` 或`store` 方法使用.
 
 ### Java
 
-The following techniques are all good for preventing attacks against deserialization against [Java's Serializable format](https://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html).
+以下技术都有助于防止针对[Java序列化格式](https://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html)的反序列化攻击。
 
-Implementation advices:
+实施建议：
 
-- In your code, override the `ObjectInputStream#resolveClass()` method to prevent arbitrary classes from being deserialized. This safe behavior can be wrapped in a library like [SerialKiller](https://github.com/ikkisoft/SerialKiller).
-- Use a safe replacement for the generic `readObject()` method as seen here. Note that this addresses "[billion laughs](https://en.wikipedia.org/wiki/Billion_laughs_attack)" type attacks by checking input length and number of objects deserialized.
+- 在代码中，重写`ObjectInputStream#resolveClass()`方法以防止反序列化任意类。这种安全行为可以封装在像[SerialKiller](https://github.com/ikkisoft/SerialKiller)这样的库中.
+- 使用安全函数替换通用的`readObject()`方法的使用。请注意，通过检查输入长度和反序列化对象的数量来解决"[billion laughs](https://en.wikipedia.org/wiki/Billion_laughs_attack)" 类型的攻击。
 
-#### WhiteBox Review
+#### 白盒审计
 
-Be aware of the following Java API uses for potential serialization vulnerability.
+请注意以下Java API存在潜在的序列化漏洞。
 
-1. `XMLdecoder` with external user defined parameters
+1. `XMLdecoder` 使用外部用户定义的参数
 
-2. `XStream` with `fromXML` method (xstream version <= v1.46 is vulnerable to the serialization issue)
+2. `XStream` 配合`fromXML` 方法(xstream version <= v1.46 易受序列化问题的影响)
 
-3. `ObjectInputStream` with `readObject`
+3. `ObjectInputStream` 配合`readObject`
 
-4. Uses of `readObject`, `readObjectNodData`, `readResolve` or `readExternal`
+4. 使用`readObject`, `readObjectNodData`, `readResolve` 或`readExternal`
 
 5. `ObjectInputStream.readUnshared`
 
 6. `Serializable`
 
-#### BlackBox Review
+#### 黑盒审计
 
-If the captured traffic data include the following patterns may suggest that the data was sent in Java serialization streams
+如果捕获的流量数据包括以下模式，则可能表明数据是在Java序列化流中发送的
 
-- `AC ED 00 05` in Hex
-- `rO0` in Base64
-- `Content-type` header of an HTTP response set to `application/x-java-serialized-object`
+- Hex包含`AC ED 00 05`
+- Base64编码包含`rO0` 
+- HTTP响应头的`Content-type` 为 `application/x-java-serialized-object`
 
-#### Prevent Data Leakage and Trusted Field Clobbering
+#### 防止数据泄漏及受信任的字段破坏
 
-If there are data members of an object that should never be controlled by end users during deserialization or exposed to users during serialization, they should be declared as [the `transient` keyword](https://docs.oracle.com/javase/7/docs/platform/serialization/spec/serial-arch.html#7231) (section *Protecting Sensitive Information*).
+如果某个对象的数据成员在反序列化过程中不应由最终用户控制，或在序列化过程中不应向用户公开，则应将其声明为[`transient`关键字](https://docs.oracle.com/javase/7/docs/platform/serialization/spec/serial-arch.html#7231)（*保护敏感信息*章节）。
 
-For a class that defined as Serializable, the sensitive information variable should be declared as `private transient`.
+对于定义为可序列化的类，敏感信息变量应声明为`private transient`。
 
-For example, the class myAccount, the variable 'profit' and 'margin' were declared as transient to avoid to be serialized:
+例如，myAccount类、变量`profit`和`margin`被声明为transient，以避免序列化：
 
 ```java
 public class myAccount implements Serializable
@@ -102,9 +102,9 @@ public class myAccount implements Serializable
     ....
 ```
 
-#### Prevent Deserialization of Domain Objects
+#### 防止domain对象的反序列化
 
-Some of your application objects may be forced to implement Serializable due to their hierarchy. To guarantee that your application objects can't be deserialized, a `readObject()` method should be declared (with a `final` modifier) which always throws an exception:
+由于层次结构的原因，一些应用程序对象可能会被迫实现可序列化。为了保证应用程序对象不能被反序列化，应该声明一个`readObject()`方法（带有`final`修饰符），该方法可以抛出异常：
 
 ```java
 private final void readObject(ObjectInputStream in) throws java.io.IOException {
@@ -112,18 +112,19 @@ private final void readObject(ObjectInputStream in) throws java.io.IOException {
 }
 ```
 
-#### Harden Your Own java.io.ObjectInputStream
+#### 强化自己的java.io.ObjectInputStream
 
-The `java.io.ObjectInputStream` class is used to deserialize objects. It's possible to harden its behavior by subclassing it. This is the best solution if:
+`java.io.ObjectInputStream` 类用于反序列化对象，通过将其子类化，可以强化其行为。这是最好的解决方案，如果：
 
-- You can change the code that does the deserialization
-- You know what classes you expect to deserialize
+* 您可以更改执行反序列化的代码
 
-The general idea is to override [`ObjectInputStream.html#resolveClass()`](http://docs.oracle.com/javase/7/docs/api/java/io/ObjectInputStream.html#resolveClass(java.io.ObjectStreamClass)) in order to restrict which classes are allowed to be deserialized.
+* 你知道你希望反序列化什么类
 
-Because this call happens before a `readObject()` is called, you can be sure that no deserialization activity will occur unless the type is one that you wish to allow.
+一般的想法是重写 [`ObjectInputStream.html#resolveClass()`](http://docs.oracle.com/javase/7/docs/api/java/io/ObjectInputStream.html#resolveClass(java.io.ObjectStreamClass))， 以便限制允许反序列化的类。
 
-A simple example of this shown here, where the the `LookAheadObjectInputStream` class is guaranteed not to deserialize any other type besides the `Bicycle` class:
+由于此调用发生在调用`readObject()`之前，因此可以确保不会发生反序列化活动，除非该类型是您希望允许的类型。
+
+这里展示了一个简单的例子，`LookAheadObjectInputStream`类保证不会反序列化除`Bicycle`类之外的任何其他类型：
 
 ```java
 public class LookAheadObjectInputStream extends ObjectInputStream {
@@ -145,79 +146,86 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
 }
 ```
 
-More complete implementations of this approach have been proposed by various community members:
+各种社区成员已经提出了这种方法的更完整实施方案：
 
-- [NibbleSec](https://github.com/ikkisoft/SerialKiller) - a library that allows creating lists of classes that are allowed to be deserialized
-- [IBM](https://www.ibm.com/developerworks/library/se-lookahead/) - the seminal protection, written years before the most devastating exploitation scenarios were envisioned.
+- [NibbleSec](https://github.com/ikkisoft/SerialKiller) - 创建允许反序列化的类列表的库
+- [IBM](https://www.ibm.com/developerworks/library/se-lookahead/) - 在设想最具破坏性的场景之前的几年，写下的种子保护 ([D] 不好理解)
 - [Apache Commons IO classes](https://commons.apache.org/proper/commons-io/javadocs/api-2.5/org/apache/commons/io/serialization/ValidatingObjectInputStream.html)
 
-#### Harden All java.io.ObjectInputStream Usage with an Agent
+#### 使用 Agent 强化全部 java.io.ObjectInputStream 
 
-As mentioned above, the `java.io.ObjectInputStream` class is used to deserialize objects. It's possible to harden its behavior by subclassing it. However, if you don't own the code or can't wait for a patch, using an agent to weave in hardening to `java.io.ObjectInputStream` is the best solution.
+如前所述， `java.io.ObjectInputStream`类用于反序列化对象。通过将其子类化，可以强化其行为。
 
-Globally changing `ObjectInputStream` is only safe for block-listing known malicious types, because it's not possible to know for all applications what the expected classes to be deserialized are. Fortunately, there are very few classes needed in the blocklist to be safe from all the known attack vectors, today.
+然而，如果你没有代码或者等不来补丁更新，可以使用一个agent将其嵌入到 `java.io.ObjectInputStream` 是最好的解决方案。
 
-It's inevitable that more "gadget" classes will be discovered that can be abused. However, there is an incredible amount of vulnerable software exposed today, in need of a fix. In some cases, "fixing" the vulnerability may involve re-architecting messaging systems and breaking backwards compatibility as developers move towards not accepting serialized objects.
+全局更改`ObjectInputStream`只在防御已知恶意类型是安全的([D] 黑名单方式)，因为不可能知道所有应用程序预期反序列化的类是什么。
 
-To enable these agents, simply add a new JVM parameter:
+幸运的是，如今，黑名单列表中仅需少量的类即可抵御大量已知的攻击向量。
+
+不可避免地，会发现更多可能被滥用的“gadget”类。然而，如今有大量易受攻击的软件暴露出来，需要修复。在某些情况下，“修复”漏洞可能涉及重新设计消息传递系统，并在开发人员不接受序列化对象时破坏向后兼容性。
+
+
+要启用这些代理，只需添加一个新的JVM参数：
 
 ```text
 -javaagent:name-of-agent.jar
 ```
 
-Agents taking this approach have been released by various community members:
+各种社区成员已经发布了采用这种方法的agent:
 
 - [rO0 by Contrast Security](https://github.com/Contrast-Security-OSS/contrast-rO0)
 
-A similar, but less scalable approach would be to manually patch and bootstrap your JVM's ObjectInputStream. Guidance on this approach is available [here](https://github.com/wsargent/paranoid-java-serialization).
+一种类似但可扩展性较差的方法是手动修补和引导JVM的ObjectInputStream。有关这种方法的指导意见[此处](https://github.com/wsargent/paranoid-java-serialization).
 
 ### .Net CSharp
 
-#### WhiteBox Review
+#### 白盒审计
 
-Search the source code for the following terms:
+在源代码中搜索以下术语：
 
 1. `TypeNameHandling`
 2. `JavaScriptTypeResolver`
 
-Look for any serializers where the type is set by a user controlled variable.
+查找由用户控制变量进行类型设置的任何序列化函数。
 
-#### BlackBox Review
+#### 黑盒审计
 
-Search for the following base64 encoded content that starts with:
+搜索以下以开头的base64编码内容：
 
 ```text
 AAEAAAD/////
 ```
 
-Search for content with the following text:
+搜索包含以下文本的内容：
 
 1. `TypeObject`
 2. `$type:`
 
-#### General Precautions
+#### 一般预防措施
 
-Don't allow the datastream to define the type of object that the stream will be deserialized to. You can prevent this by for example using the `DataContractSerializer` or `XmlSerializer` if at all possible.
+微软已经声明，`BinaryFormatter`类型是危险的，无法保护。因此，不应使用它。详细信息请参见[BinaryFormatter安全指南](https://docs.microsoft.com/en-us/dotnet/standard/serialization/binaryformatter-security-guide). ([D] 在逆向某客户端时遇到该场景，并实现了RCE，后续有机会分享)
 
-Where `JSON.Net` is being used make sure the `TypeNameHandling` is only set to `None`.
+对象类型的流被用于反序列化则不允许通过数据流定义。如果可能的话，可以通过使用`DataContractSerializer`或`XmlSerializer`来防止这种情况。
+
+当使用`JSON.Net`时需要确保`TypeNameHandling`仅被设置为`None`.
 
 ```csharp
 TypeNameHandling = TypeNameHandling.None
 ```
 
-If `JavaScriptSerializer` is to be used then do not use it with a `JavaScriptTypeResolver`.
+如果要使用`JavaScriptSerializer`，则不要将其与`JavaScriptTypeResolver`一起使用。
 
-If you must deserialise data streams that define their own type, then restrict the types that are allowed to be deserialized. One should be aware that this is still risky as many native .Net types potentially dangerous in themselves. e.g.
+如果必须反序列化定义其自身类型的数据流，则限制允许反序列化的类型。人们应该意识到，和许多.Net类型原生函数本身具有潜在危险一样, 这仍然存在风险。例如
 
 ```csharp
 System.IO.FileInfo
 ```
 
-`FileInfo` objects that reference files actually on the server can when deserialized, change the properties of those files e.g. to read-only, creating a potential denial of service attack.
+在反序列化时，引用服务器上实际文件的`FileInfo` 对象可能会更改这些文件的属性，例如更改为只读，从而造成潜在的拒绝服务攻击。
 
-Even if you have limited the types that can be deserialised remember that some types have properties that are risky. `System.ComponentModel.DataAnnotations.ValidationException`, for example has a property `Value` of type `Object`. if this type is the type allowed for deserialization then an attacker can set the `Value` property to any object type they choose.
+即使您限制了可以反序列化的类型，也要记住，某些类型的属性有风险. 例如，`System.ComponentModel.DataAnnotations.ValidationException`， 若其属性"Value"的类型为"Object"，如果此类型是允许反序列化的类型，则攻击者可以将“Value”属性设置为他们可控的任何对象类型。
 
-Attackers should be prevented from steering the type that will be instantiated. If this is possible then even `DataContractSerializer` or `XmlSerializer` can be subverted e.g.
+应防止攻击者操纵将被实例化的类型。即使是`DataContractSerializer` 或`XmlSerializer`也可能被滥用，例如：
 
 ```csharp
 // Action below is dangerous if the attacker can change the data in the database
@@ -228,7 +236,7 @@ var serializer = new DataContractJsonSerializer(Type.GetType(typename));
 var obj = serializer.ReadObject(ms);
 ```
 
-Execution can occur within certain .Net types during deserialization. Creating a control such as the one shown below is ineffective.
+恶意执行可以发生在某些.Net类型的反序列化期间。创建如下所示的控件是无效的。
 
 ```csharp
 var suspectObject = myBinaryFormatter.Deserialize(untrustedData);
@@ -240,13 +248,13 @@ if (suspectObject is SomeDangerousObjectType)
 }
 ```
 
-For `BinaryFormatter` and `JSON.Net` it is possible to create a safer form of allow-list control using a custom `SerializationBinder`.
+对于 `JSON.Net` 可以使用自定义的`SerializationBinder`创建更安全的白名单列表形式。
 
-Try to keep up-to-date on known .Net insecure deserialization gadgets and pay special attention where such types can be created by your deserialization processes. **A deserializer can only instantiate types that it knows about**.
+尽量了解最新已知的关于.NET不安全的反序列化gadgets相关信息，并特别注意反序列化进程可以创建此类类型的代码。**反序列化程序只能实例化它知道的类型**。
 
-Try to keep any code that might create potential gadgets separate from any code that has internet connectivity. As an example `System.Windows.Data.ObjectDataProvider` used in WPF applications is a known gadget that allows arbitrary method invocation. It would be risky to have this a reference to this assembly in a REST service project that deserializes untrusted data.
+尝试将可能创建潜在gadgets的代码与任何具有互联网连接的代码分开。例如，在WPF应用程序中使用的`System.Windows.Data.ObjectDataProvider` 是一个允许任意方法调用的已知gadgets。在对不可信数据进行反序列化的REST服务项目中，引用上述程序集是有风险的。 
 
-#### Known .NET RCE Gadgets
+#### 已知 .NET RCE Gadgets
 
 - `System.Configuration.Install.AssemblyInstaller`
 - `System.Activities.Presentation.WorkflowDesigner`
@@ -257,25 +265,29 @@ Try to keep any code that might create potential gadgets separate from any code 
 - `System.Data.DataViewManager, System.Xml.XmlDocument/XmlDataDocument`
 - `System.Management.Automation.PSObject`
 
-## Language-Agnostic Methods for Deserializing Safely
 
-### Using Alternative Data Formats
 
-A great reduction of risk is achieved by avoiding native (de)serialization formats. By switching to a pure data format like JSON or XML, you lessen the chance of custom deserialization logic being repurposed towards malicious ends.
+## 安全使用反序列化-无关语言的通用方法
 
-Many applications rely on a [data-transfer object pattern](https://en.wikipedia.org/wiki/Data_transfer_object) that involves creating a separate domain of objects for the explicit purpose data transfer. Of course, it's still possible that the application will make security mistakes after a pure data object is parsed.
+### 使用替代数据格式
 
-### Only Deserialize Signed Data
+通过避免使用原生的（反）序列化格式，可以大大降低风险。通过切换到JSON或XML等纯数据格式，可以减少自定义反序列化逻辑被重新用于恶意目的的可能性。
 
-If the application knows before deserialization which messages will need to be processed, they could sign them as part of the serialization process. The application could then to choose not to deserialize any message which didn't have an authenticated signature.
+许多应用程序依赖于[数据传输对象模式](https://en.wikipedia.org/wiki/Data_transfer_object)，这涉及待为显式数据传输目的创建一个单独的对象域。当然，在解析纯数据对象后，应用程序仍有可能犯安全错误。
 
-## Mitigation Tools/Libraries
+### 仅对签名数据进行反序列化
+
+如果应用程序在反序列化之前知道需要处理哪些消息，则可以在序列化过程中对其进行签名。然后，应用程序可以选择不反序列化任何没有经过身份验证的签名的消息。
+
+
+
+## 缓解工具/库
 
 - [Java secure deserialization library](https://github.com/ikkisoft/SerialKiller)
 - [SWAT](https://github.com/cschneider4711/SWAT) (Serial Whitelist Application Trainer)
 - [NotSoSerial](https://github.com/kantega/notsoserial)
 
-## Detection Tools
+## 检测工具
 
 - [Java deserialization cheat sheet aimed at pen testers](https://github.com/GrrrDog/Java-Deserialization-Cheat-Sheet)
 - [A proof-of-concept tool for generating payloads that exploit unsafe Java object deserialization.](https://github.com/frohoff/ysoserial)
@@ -294,7 +306,7 @@ If the application knows before deserialization which messages will need to be p
     - [SuperSerial](https://github.com/DirectDefense/SuperSerial)
     - [SuperSerial-Active](https://github.com/DirectDefense/SuperSerial-Active)
 
-## References
+## 引用
 
 - [Java-Deserialization-Cheat-Sheet](https://github.com/GrrrDog/Java-Deserialization-Cheat-Sheet)
 - [Deserialization of untrusted data](https://owasp.org/www-community/vulnerabilities/Deserialization_of_untrusted_data)
