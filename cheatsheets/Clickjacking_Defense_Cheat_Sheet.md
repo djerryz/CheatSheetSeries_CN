@@ -1,16 +1,18 @@
-# Clickjacking Defense Cheat Sheet
+# 防范点击劫持
 
-## Introduction
+## 介绍
 
-This cheat sheet is intended to provide guidance for developers on how to defend against [Clickjacking](https://owasp.org/www-community/attacks/Clickjacking), also known as UI redress attacks.
+本备忘单旨在为开发者提供关于如何防御[Clickjacking](https://owasp.org/www-community/attacks/Clickjacking)(又称为UI redress 攻击)的相关指导。
 
-There are three main mechanisms that can be used to defend against these attacks:
+有三种主要机制可用于防御这些攻击：
 
-- Preventing the browser from loading the page in frame using the [X-Frame-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options) or [Content Security Policy (frame-ancestors)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors) HTTP headers.
-- Preventing session cookies from being included when the page is loaded in a frame using the [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#Directives) cookie attribute.
-- Implementing JavaScript code in the page to attempt to prevent it being loaded in a frame (known as a "frame-buster").
+* 阻止浏览器在frame标签加载页面是，阻止使用 [X-Frame-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options) 或[Content Security Policy (frame-ancestors)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors) HTTP头
 
-Note that these mechanisms are all independent of each other, and where possible more than one of them should be implemented in order to provide defense in depth.
+* 使用[SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#Directives) 将cookie属性， 以便在frame标签加载页面时阻止包含或获取会话cookie
+
+* 在页面中实现JavaScript代码，试图阻止它被加载到frame中（称为“frame buster”）。
+
+请注意，这些机制都是相互独立的，在可能的情况下，应实施多个机制，以便提供纵深防御。 
 
 ## Defending with Content Security Policy (CSP) frame-ancestors directive
 
