@@ -2,115 +2,119 @@
 
 ## 介绍
 
-本备忘单旨在为开发者提供关于如何防御[Clickjacking](https://owasp.org/www-community/attacks/Clickjacking)(又称为UI redress 攻击)的相关指导。
+本备忘单旨在为开发者提供关于如何防御 [点击劫持](https://owasp.org/www-community/attacks/Clickjacking)的指导，也称为用户界面伪装攻击。
 
 有三种主要机制可用于防御这些攻击：
 
-* 阻止浏览器在frame标签加载页面是，阻止使用 [X-Frame-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options) 或[Content Security Policy (frame-ancestors)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors) HTTP头
+- 使用 [X-Frame-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options) 或 [Content Security Policy (frame-ancestors)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors) HTTP 头来阻止浏览器使用frame加载([D]自己的）页面.
+- 使用 [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) cookie 属性，阻止会话cookie被使用frame加载的页面的请求所调用
+- 在页面中实现JavaScript代码，试图阻止它被加载到一个frame中（称为“frame-buster”）
 
-* 使用[SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#Directives) 将cookie属性， 以便在frame标签加载页面时阻止包含或获取会话cookie
+请注意，这些机制都是相互独立的，在可能的情况下，应实施多个机制，以便提供纵深防御。
 
-* 在页面中实现JavaScript代码，试图阻止它被加载到frame中（称为“frame buster”）。
+## 通过内容安全策略 (CSP) frame-ancestors指令进行保护
 
-请注意，这些机制都是相互独立的，在可能的情况下，应实施多个机制，以便提供纵深防御。 
+`frame-ancestors` 指令可在内容安全策略HTTP响应头中使用，以指示是否应允许浏览器在`<frame>`或`<iframe>`中呈现页面。网站可以通过确保其内容不被嵌入到其他网站来避免点击劫持攻击。 
 
-## Defending with Content Security Policy (CSP) frame-ancestors directive
+`frame-ancestors`允许站点使用正常的内容安全策略语义授权多个域。 
 
-The `frame-ancestors` directive can be used in a Content-Security-Policy HTTP response header to indicate whether or not a browser should be allowed to render a page in a `<frame>` or `<iframe>`. Sites can use this to avoid Clickjacking attacks by ensuring that their content is not embedded into other sites.
+### Content-Security-Policy: frame-ancestors 示例
 
-`frame-ancestors` allows a site to authorize multiple domains using the normal Content Security Policy semantics.
-
-### Content-Security-Policy: frame-ancestors Examples
-
-Common uses of CSP frame-ancestors:
+常见的CSP frame-ancestors用法:
 
 - `Content-Security-Policy: frame-ancestors 'none';`
-    - This prevents any domain from framing the content. This setting is recommended unless a specific need has been identified for framing.
+    - 这将防止任何域使用frame加载内容。除非确定了特定的frame需求，否则建议使用此设置。
 - `Content-Security-Policy: frame-ancestors 'self';`
-    - This only allows the current site to frame the content.
+    - 这将仅允许当前站点的frame加载内容
 - `Content-Security-Policy: frame-ancestors 'self' *.somesite.com https://myfriend.site.com;`
-    - This allows the current site, as well as any page on `somesite.com` (using any protocol), and only the page `myfriend.site.com`, using HTTPS only on the default port (443).
+    - 允许当前站点， `somesite.com` （任意协议）， `myfriend.site.com`（使用HTTPS，默认端口为443）下的frame加载内容
 
-Note that the single quotes are required around `self` and `none`, but may not occur around other source expressions.
+请注意，在`self`和`none`使用时需要单引号包裹，但在其他源表达式周围可能不会出现单引号。
+
+
+有关更多详细信息和更复杂的示例，请参阅以下文档：
 
 See the following documentation for further details and more complex examples:
 
 - <https://w3c.github.io/webappsec-csp/#directive-frame-ancestors>
 - <https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors>
 
-### Limitations
+### 局限性
 
-- **Browser support:** CSP frame-ancestors is not supported by all the major browsers yet.
-- **X-Frame-Options takes priority:** [Section "Relation to X-Frame-Options" of the CSP Spec](https://w3c.github.io/webappsec/specs/content-security-policy/#frame-ancestors-and-frame-options) says: "*If a resource is delivered with an policy that includes a directive named frame-ancestors and whose disposition is "enforce", then the X-Frame-Options header MUST be ignored*", but Chrome 40 & Firefox 35 ignore the frame-ancestors directive and follow the X-Frame-Options header instead.
+- **浏览器兼容:** CSP frame-ancestors 还未被所有主流浏览器支持。
+- **优先考虑X-Frame-Options:** [Section "Relation to X-Frame-Options" of the CSP Spec](https://w3c.github.io/webappsec/specs/content-security-policy/#frame-ancestors-and-frame-options) 说到: *如果资源交付的策略包含名为frame-ancestors 指令，其处置方式为“强制”，则必须忽略X-frame-Options头*”，但Chrome 40和Firefox 35却是忽略frame-ancestors 指令，而是遵循X-frame-Options标头。
 
-## Defending with X-Frame-Options Response Headers
+## 通过X-Frame-Options响应头进行保护
 
-The `X-Frame-Options` HTTP response header can be used to indicate whether or not a browser should be allowed to render a page in a `<frame>` or `<iframe>`. Sites can use this to avoid Clickjacking attacks, by ensuring that their content is not embedded into other sites. Set the X-Frame-Options header for all responses containing HTML content. The possible values are "DENY", "SAMEORIGIN", or "ALLOW-FROM uri"
+ `X-Frame-Options` HTTP 响应头可用于指示是否允许浏览器在`<frame>`或`<iframe>`中呈现页面。网站可以通过确保其内容不嵌入其他网站来避免点击劫持攻击。为包含HTML内容的所有响应包设置X-Frame-Options标题。可能的值是“DENY”、“SAMEORIGIN”或“ALLOW-FROM-uri”
 
-### X-Frame-Options Header Types
+### X-Frame-Options头类型
 
-There are three possible values for the X-Frame-Options header:
+X-Frame-Options头有三个可能的值：
 
-- **DENY**, which prevents any domain from framing the content. The "DENY" setting is recommended unless a specific need has been identified for framing.
-- **SAMEORIGIN**, which only allows the current site to frame the content.
-- **ALLOW-FROM uri**, which permits the specified 'uri' to frame this page. (e.g., `ALLOW-FROM http://www.example.com`).
-    - Check limitations below because this will fail open if the browser does not support it.
-    - Other browsers support the new [CSP frame-ancestors directive](https://w3c.github.io/webappsec-csp/#directive-frame-ancestors) instead. A few support both.
+- **DENY**, 这会阻止任何域下的frame加载本站点内容。建议使用“拒绝”设置，除非确定了特定的框架需求。
+- **SAMEORIGIN**, 这只允许当前网站对内容进行frame加载
+- **ALLOW-FROM uri**, 允许指定的“uri” frame此页面。（例如，`ALLOW-FROMhttp://www.example.com`).
+    - 检查下面的限制，因为如果浏览器不支持它，它将无法打开。
+    - 其他浏览器支持新的[CSP frame-ancestors 指令](https://w3c.github.io/webappsec-csp/#directive-frame-ancestors) ， 很少两者能同时支持的
+    
 
-### Browser Support
+### 浏览器兼容性
 
-The following [browsers](https://caniuse.com/#search=X-Frame-Options) support X-Frame-Options headers.
+下列的[浏览器](https://caniuse.com/#search=X-Frame-Options) 支持 X-Frame-Options 头.
 
-References:
+参考:
 
 - [Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/HTTP/X-Frame-Options)
 - [IETF Draft](http://datatracker.ietf.org/doc/draft-ietf-websec-x-frame-options/)
-- [X-Frame-Options Compatibility Test](https://erlend.oftedal.no/blog/tools/xframeoptions/) - Check this for the LATEST browser support info for the X-Frame-Options header
+- [X-Frame-Options Compatibility Test](https://erlend.oftedal.no/blog/tools/xframeoptions/) - 检查此项以获取X-Frame-Options头的最新浏览器支持信息
 
-### Implementation
+### 实施
 
-To implement this protection, you need to add the `X-Frame-Options` HTTP Response header to any page that you want to protect from being clickjacked via framebusting. One way to do this is to add the HTTP Response Header manually to every page. A possibly simpler way is to implement a filter that automatically adds the header to every page or to add it at Web Application Firewall of Web/Application Server level.
+要实现这种保护，您需要将`X-Frame-Options`HTTP响应头添加到任何要通过framebusting防止点击劫持的页面。一种方法是将HTTP响应头手动添加到每个页面。一种可能更简单的方法是实现一个过滤器，自动将头添加到每个页面，或者将其添加到Web/Application Server级别的Web Application Firewall。
 
-### Common Defense Mistakes
+### 常见的错误防御
 
-Meta-tags that attempt to apply the X-Frame-Options directive DO NOT WORK. For example, `<meta http-equiv="X-Frame-Options" content="deny">` will not work. You must apply the X-FRAME-OPTIONS directive as HTTP Response Header as described above.
+Meta-tags使用X-Frame-Options指令是无效的。例如，`<meta-http equiv=“X-Frame-Options”content=“deny”>`将不起作用。如上所述，必须将X-FRAME-OPTIONS指令作为HTTP响应头应用。
 
-### Limitations
+### 局限性
 
-- **Per-page policy specification**: The policy needs to be specified for every page, which can complicate deployment. Providing the ability to enforce it for the entire site, at login time for instance, could simplify adoption.
-- **Problems with multi-domain sites**: The current implementation does not allow the webmaster to provide a list of domains that are allowed to frame the page. While listing allowed domains can be dangerous, in some cases a webmaster might have no choice but to use more than one hostname.
-- **ALLOW-FROM browser support**: The ALLOW-FROM option is a relatively recent addition (circa 2012) and may not be supported by all browsers yet. BE CAREFUL ABOUT DEPENDING ON ALLOW-FROM. If you apply it and the browser does not support it, then you will have NO clickjacking defense in place.
-- **Multiple options not supported**: There is no way to allow the current site and a third-party site to frame the same response. Browsers only honour one X-Frame-Options header and only one value on that header.
-- **Nested Frames don't work with SAMEORIGIN and ALLOW-FROM**: In the following situation, the `http://framed.invalid/child` frame does not load because ALLOW-FROM applies to the top-level browsing context, not that of the immediate parent. The solution is to use ALLOW-FROM in both the parent and child frames (but this prevents the child frame loading if the `//framed.invalid/parent` page is loaded as the top level document).
+- **页策略规范**：需要为每页指定策略，这可能会使部署复杂化。例如，在登录时为整个网站提供强制执行功能，可以简化采用。
+- **多域网站的问题**：当前的实现不允许网站管理员提供允许frame页面的域列表。虽然列出允许的域可能很危险，但在某些情况下，网站管理员可能别无选择，只能使用多个主机名。
+- **ALLOW-FROM 浏览器兼容**: ALLOW-FROM选项是一个相对较新的添加项（大约2012年），可能还不被所有浏览器支持。注意不要依赖于“ALLOW-FROM”。如果您应用了它，而浏览器不支持它，那么您将没有点击拦截防御。
+- **不支持多个选项**：无法允许当前站点和第三方站点frame相同的响应。浏览器只支持一个X-Frame-Options头和该头上的一个值。
+- **嵌套框架不适用于SAMEORIGIN和ALLOW-FROM**：在以下情况下`http://framed.invalid/child`框架不会加载，因为“ALLOW-FROM”应用于顶级浏览上下文，而不是直接父级的浏览上下文。解决方案是在父框架和子框架中都使用ALLOW-FROM（但如果`//framed.invalid/parent`页面作为顶级文档加载，这将阻止子框架加载）。
 
 ![NestedFrames](../assets/Clickjacking_Defense_Cheat_Sheet_NestedFrames.png)
 
-- **X-Frame-Options Deprecated** While the X-Frame-Options header is supported by the major browsers, it was never standardized and has been deprecated in favour of the frame-ancestors directive from the CSP Level 2 specification.
-- **Proxies** Web proxies are notorious for adding and stripping headers. If a web proxy strips the X-Frame-Options header then the site loses its framing protection.
+- **X-Frame-Options已被弃用**：虽然主要浏览器支持X-Frame-Options标头，但它从未被标准化，并且已被弃用，取而代之的是CSP 2级规范中的frame-ancestors指令。 
+- **代理**：Web代理因添加和剥离HTTP头而臭名昭著。如果web代理删除X-Frame-Options头，则网站将失去frame保护。 
 
-## Defending with SameSite Cookies
+## 通过SameSite Cookies防御
 
-The `SameSite` cookie attribute defined in [RFC 6265bis](https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-02#section-5.3.7) is primarily intended to defend against [cross-site request forgery (CSRF)](Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.md#samesite-cookie-attribute); however it can also provide protection against Clickjacking attacks.
+ [RFC 6265bis](https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-02#section-5.3.7) 中定义的`SameSite`cookie属性主要用于防御 [cross-site request forgery (CSRF)](Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.md#samesite-cookie-attribute); 不过，它也可以提供针对点击劫持攻击的保护。
 
-Cookies with a `SameSite` attribute of either `strict` or `lax` will not be included in requests made to a page within an `<iframe>`. This means that if the session cookies are marked as `SameSite`, any Clickjacking attack that requires the victim to be authenticated will not work, as the cookie will not be sent. An article on the [Netsparker blog](https://www.netsparker.com/blog/web-security/same-site-cookie-attribute-prevent-cross-site-request-forgery/) provides further details on which types of requests cookies are sent for with the different SameSite policies.
+`SameSite`属性为“strict”或“lax”的cookie,将不被`<iframe>`内的页面发出的请求携带。这意味着，如果会话cookie被标记为`SameSite·，则任何需要对受害者进行身份验证的点击劫持攻击都将不起作用，因为cookie将不会被发送。 [Netsparker 博客](https://www.netsparker.com/blog/web-security/same-site-cookie-attribute-prevent-cross-site-request-forgery/)上的一篇文章提供有关使用不同SameSite策略会发送哪些类型的请求Cookie，提供进一步详细信息。
 
-This approach is discussed on the [JavaScript.info website](https://javascript.info/clickjacking#samesite-cookie-attribute).
+ [JavaScript.info website](https://javascript.info/clickjacking#samesite-cookie-attribute).上讨论了这种方法。
 
-### Limitations
+### 局限性
 
-If the Clickjacking attack does not require the user to be authenticated, this attribute will not provide any protection.
+如果点击劫持攻击不需要对用户进行身份验证，则此属性将不提供任何保护。
 
-Additionally, while `SameSite` attribute is supported by [most modern browsers](https://caniuse.com/#feat=same-site-cookie-attribute), there are still some users (approximately 6% as of November 2020) with browsers that do not support it.
 
-The use of this attribute should be considered as part of a defence-in-depth approach, and it should not be relied upon as the sole protective measure against Clickjacking.
+此外，[大多数现代浏览器](https://caniuse.com/#feat=same-site-cookie-attribute)都支持`SameSite`属性，仍有一些用户（截至2020年11月，约6%）的浏览器不支持它。
 
-## Best-for-now Legacy Browser Frame Breaking Script
 
-One way to defend against clickjacking is to include a "frame-breaker" script in each page that should not be framed. The following methodology will prevent a webpage from being framed even in legacy browsers, that do not support the X-Frame-Options-Header.
+使用该属性应被视为纵深防御方法的一部分，不应将其作为防止点击劫持的唯一保护措施。
 
-In the document HEAD element, add the following:
+## 当下最适用于传统浏览器的Frame保护脚本
 
-First apply an ID to the style element itself:
+防止点击劫持的一种方法是在每个不应该被frame的页面中包含一个“frame-breaker”脚本。以下方法将防止网页在不支持X-Frame-Options-Header的传统浏览器中被fra,e。 
+
+在document HEAD元素中，添加以下内容： 
+
+首先将ID应用于样式元素本身： 
 
 ```html
 <style id="antiClickjack">
@@ -118,7 +122,7 @@ First apply an ID to the style element itself:
 </style>
 ```
 
-Then, delete that style by its ID immediately after in the script:
+ 然后，在脚本中立即按其ID删除该样式： 
 
 ```html
 <script type="text/javascript">
@@ -131,13 +135,15 @@ Then, delete that style by its ID immediately after in the script:
 </script>
 ```
 
-This way, everything can be in the document HEAD and you only need one method/taglib in your API.
+这样，所有内容都可以放在document HEAD中，而API中只需要一个方法/标记库。
 
-## window.confirm() Protection
+([D] 简单描述下上述脚本的功能，通过判断self===top确认是否在frame内所加载，若是则激活style，style会将整个body隐藏)
 
-The use of X-Frame-Options or a frame-breaking script is a more fail-safe method of clickjacking protection. However, in scenarios where content must be frameable, then a `window.confirm()` can be used to help mitigate Clickjacking by informing the user of the action they are about to perform.
+## window.confirm()保护机制
 
-Invoking `window.confirm()` will display a popup that cannot be framed. If the `window.confirm()` originates from within an iframe with a different domain than the parent, then the dialog box will display what domain the `window.confirm()` originated from. In this scenario the browser is displaying the origin of the dialog box to help mitigate Clickjacking attacks. It should be noted that Internet Explorer is the only known browser that does not display the domain that the `window.confirm()` dialog box originated from, to address this issue with Internet Explorer insure that the message within the dialog box contains contextual information about the type of action being performed. For example:
+使用X-Frame-Options或“frame-breaker”脚本是一种更安全的点击保护方法。然而，在内容必须是可frame的场景中，则需要一个 `window.confirm()`通过通知用户他们将要执行的操作来帮助减轻点击劫持。
+
+调用 `window.confirm()`将显示一个无法设置边框的弹出窗口。如果你打开源于iframe中的一个域，该域与父域不同，然后 `window.confirm()`拉起对话框将显示窗口中的域。在这种情况下，浏览器会显示对话框的来源，以帮助减轻点击劫持攻击。应该注意的是，Internet Explorer是已知的唯一一个不显示窗口中的域的浏览器，要使用Internet Explorer解决此问题，请确保对话框中的消息包含有关正在执行的操作类型的上下文信息。例如：
 
 ```html
 <script type="text/javascript">
@@ -150,21 +156,21 @@ Invoking `window.confirm()` will display a popup that cannot be framed. If the `
 </script>
 ```
 
-## Insecure Non-Working Scripts DO NOT USE
+## 不要使用不安全且无效的Scripts
 
-Consider the following snippet which is **NOT recommended** for defending against clickjacking:
+考虑下面的片段，它不被推荐用于防范点击劫持：
 
 ```html
 <script>if (top!=self) top.location.href=self.location.href</script>
 ```
 
-This simple frame breaking script attempts to prevent the page from being incorporated into a frame or iframe by forcing the parent window to load the current frame's URL. Unfortunately, multiple ways of defeating this type of script have been made public. We outline some here.
+这个简单的frame-breaker脚本试图通过强制父窗口加载当前框架的URL来防止页面被合并到frame或iframe中。不幸的是，击败这种类型脚本的多种方法已经公开。我们在这里概述一些。
 
-### Double Framing
+### 双重 Framing
 
-Some frame busting techniques navigate to the correct page by assigning a value to `parent.location`. This works well if the victim page is framed by a single page. However, if the attacker encloses the victim in one frame inside another (a double frame), then accessing `parent.location` becomes a security violation in all popular browsers, due to the **descendant frame navigation policy**. This security violation disables the counter-action navigation.
+一些frame-breaker技术通过给`parent.location`赋值来导航到正确的页面。如果受害者页面是由一个页面构成的，那么这种方法效果很好。但是，如果攻击者将受害者包围在frame内的另一个frame内（双frame），则访问`parent.location`在所有流行浏览器中都会成为安全冲突，由于**descendant frame 导航策略**。此安全违规将禁用导航。
 
-**Victim frame busting code:**
+**受害者frame busting 代码:**
 
 ```javascript
 if(top.location != self.location) {
@@ -172,25 +178,27 @@ if(top.location != self.location) {
 }
 ```
 
-**Attacker top frame:**
+**攻击者 顶级 frame:**
 
 ```html
 <iframe src="attacker2.html">
 ```
 
-**Attacker sub-frame:**
+**攻击者 子-frame:**
 
 ```html
 <iframe src="http://www.victim.com">
 ```
 
-### The onBeforeUnload Event
+### onBeforeUnload事件
 
-A user can manually cancel any navigation request submitted by a framed page. To exploit this, the framing page registers an `onBeforeUnload` handler which is called whenever the framing page is about to be unloaded due to navigation. The handler function returns a string that becomes part of a prompt displayed to the user.
+用户可以手动取消frame页面提交的任何导航请求。为了利用这一点，frame页面注册了一个`onBeforeUnload`处理程序，每当由于导航(跳转)原因frame页面即将卸载时，就会调用该处理程序。handler函数返回一个字符串，该字符串将成为向用户显示的提示的一部分。
 
-Say the attacker wants to frame PayPal. He registers an unload handler function that returns the string "Do you want to exit PayPal?". When this string is displayed to the user is likely to cancel the navigation, defeating PayPal's frame busting attempt.
 
-The attacker mounts this attack by registering an unload event on the top page using the following code:
+假设攻击者想陷害PayPal。他注册了一个unload handler函数，返回字符串“您想退出PayPal吗？”。当该字符串显示给用户时，用户可能会取消导航，从而挫败PayPal的frame-busting。
+
+
+攻击者通过使用以下代码在首页上注册unload 事件来装载此攻击：
 
 ```html
 <script>
@@ -202,13 +210,16 @@ The attacker mounts this attack by registering an unload event on the top page u
 <iframe src="http://www.paypal.com">
 ```
 
-PayPal's frame busting code will generate a `BeforeUnload` event activating our function and prompting the user to cancel the navigation event.
+PayPal的frame-busting代码将生成一个·BeforeUnload·事件，激活我们的功能并提示用户取消导航事件。 
 
-### No-Content Flushing
+([D] 简单理解下，就是进入busting逻辑，通过跳出之前走了beforeunload事件，这个事件将保护性跳转给取消了)
 
-While the previous attack requires user interaction, the same attack can be done without prompting the user. Most browsers (IE7, IE8, Google Chrome, and Firefox) enable an attacker to automatically cancel the incoming navigation request in an `onBeforeUnload` event handler by repeatedly submitting a navigation request to a site responding with "*204 - No Content*".
+### No-Content刷新
 
-Navigating to a No Content site is effectively a NOP, but flushes the request pipeline, thus canceling the original navigation request. Here is sample code to do this:
+虽然之前的攻击需要用户交互，但同样的攻击也可以在不提示用户的情况下进行。大多数浏览器（IE7、IE8、Google Chrome和Firefox）都允许攻击者通过反复向响应“*204-无内容*”的网站提交导航请求，从而在`onBeforeUnload`事件处理程序中自动取消传入的导航请求。
+
+
+导航到无内容网站实际上是一个NOP，但会刷新请求管道，从而取消原始导航请求。下面是执行此操作的示例代码：([D] 结合上面取消导航(跳转)的思路就很容易理解了)
 
 ```javascript
 var preventbust = 0
@@ -225,11 +236,11 @@ setInterval( function() {
 <iframe src="http://www.victim.com">
 ```
 
-### Exploiting XSS filters
+### 攻击XSS过滤器
 
-IE8 and Google Chrome introduced reflective XSS filters that help protect web pages from certain types of XSS attacks. Nava and Lindsay (at Blackhat) observed that these filters can be used to circumvent frame busting code. The IE8 XSS filter compares given request parameters to a set of regular expressions in order to look for obvious attempts at cross-site scripting. Using "induced false positives", the filter can be used to disable selected scripts. By matching the beginning of any script tag in the request parameters, the XSS filter will disable all inline scripts within the page, including frame busting scripts. External scripts can also be targeted by matching an external include, effectively disabling all external scripts. Since subsets of the JavaScript loaded is still functional (inline or external) and cookies are still available, this attack is effective for clickjacking.
+IE8和Google Chrome引入了反射式XSS过滤器，帮助保护网页免受某些类型的XSS攻击。Nava和Lindsay（在Blackhat）观察到，这些过滤器可以用来绕过frame busting代码。IE8 XSS过滤器将给定的请求参数与一组正则表达式进行比较，以寻找明显尝试跨站点的脚本。使用“诱导误报”，过滤器可用于禁用选定脚本。通过匹配请求参数中任何脚本标记的开头，XSS过滤器将禁用页面中的所有内联脚本，包括框架分解脚本。也可以通过匹配外部包含来锁定外部脚本，从而有效地禁用所有外部脚本。由于加载的JavaScript子集仍然可用（内联或外部），并且cookie仍然可用，因此这种攻击对点击劫持非常有效。
 
-**Victim frame busting code:**
+**受害者frame busting 代码:**
 
 ```html
 <script>
@@ -239,21 +250,21 @@ IE8 and Google Chrome introduced reflective XSS filters that help protect web pa
 </script>
 ```
 
-**Attacker:**
+**攻击者:**
 
 ```html
 <iframe src="http://www.victim.com/?v=<script>if''>
 ```
 
-The XSS filter will match that parameter `<script>if` to the beginning of the frame busting script on the victim and will consequently disable all inline scripts in the victim's page, including the frame busting script. The XSSAuditor filter available for Google Chrome enables the same exploit.
+XSS过滤器将把参数`<script>if`匹配到受害者的 frame busting 解脚本的开头，从而禁用受害者页面中的所有内联脚本，包括 frame busting 脚本。Google Chrome上可用的XSauditor过滤器也支持同样的攻击。
 
-### Clobbering top.location
+### 破坏top.location
 
-Several modern browsers treat the location variable as a special immutable attribute across all contexts. However, this is not the case in IE7 and Safari 4.0.4 where the location variable can be redefined.
+一些现代浏览器将location 变量视为跨所有上下文的特殊不可变属性。然而，IE7和Safari 4.0.4中的情况并非如此，在这些版本中，可以重新定义location 变量。
 
-**IE7**: Once the framing page redefines location, any frame busting code in a subframe that tries to read `top.location` will commit a security violation by trying to read a local variable in another domain. Similarly, any attempt to navigate by assigning `top.location` will fail.
+**IE7**：一旦框架页面重新定义了location ，任何试图读取`top.location`的子frame中的frame busting代码将通过尝试读取另一个域中的局部变量产生安全冲突。同样，任何通过指定`top.location`来导航的尝试将失败。
 
-**Victim frame busting code:**
+**受害者frame busting 代码:**
 
 ```javascript
 if(top.location != self.location) {
@@ -261,7 +272,7 @@ if(top.location != self.location) {
 }
 ```
 
-**Attacker:**
+**攻击者:**
 
 ```html
 <script>var location = "clobbered";</script>
@@ -270,9 +281,10 @@ if(top.location != self.location) {
 
 **Safari 4.0.4:**
 
-We observed that although location is kept immutable in most circumstances, when a custom location setter is defined via `defineSetter` (through window) the object location becomes undefined.
+我们观察到，尽管位置在大多数情况下保持不变，但当通过`defineSetter`（通过窗口）定义自定义location设置器时，对象location将变为undefined。
 
-The framing page simply does:
+
+frame页面只做以下工作：
 
 ```html
 <script>
@@ -280,11 +292,11 @@ The framing page simply does:
 </script>
 ```
 
-Now any attempt to read or navigate the top frame's location will fail.
+现在，任何读取或导航top frame location的尝试都将失败。
 
-### Restricted zones
+### 限制区
 
-Most frame busting relies on JavaScript in the framed page to detect framing and bust itself out. If JavaScript is disabled in the context of the subframe, the frame busting code will not run. There are unfortunately several ways of restricting JavaScript in a subframe:
+大多数framing-bust依赖于frame页面中的JavaScript来检测frame并将其自身弹出。如果在子frame的上下文中禁用了JavaScript，则frame busting 代码将不会运行。不幸的是，有几种方法可以限制子frame中的JavaScript： 
 
 **In IE 8:**
 
@@ -300,7 +312,7 @@ Most frame busting relies on JavaScript in the framed page to detect framing and
 
 **Firefox and IE:**
 
-Activate [designMode](https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode) in parent page.
+在父页中激活[designMode](https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode)
 
 ```javascript
 document.designMode = "on";

@@ -35,7 +35,7 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
     * [防范SQL注入](./cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.md) - 100%
     
   * 浏览器
-    * [防范点击劫持](./cheatsheets/Clickjacking_Defense_Cheat_Sheet.md) - 1%
+    * [防范点击劫持](./cheatsheets/Clickjacking_Defense_Cheat_Sheet.md) - 100%
     * [内容安全策略](./cheatsheets/Content_Security_Policy_Cheat_Sheet.md) - 1%
     * [防范跨站请求伪造(CSRF)](./cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.md) - 1%
     * [防范基于DOM的XSS](./cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.md) - 1%
