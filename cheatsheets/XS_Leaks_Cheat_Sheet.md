@@ -1,102 +1,111 @@
-# Cross-site leaks Cheat Sheet
+# 防范跨站泄露(xs-leak)
 
-## Introduction
+## 介绍
 
 This article describes examples of attacks and defenses against cross-site leaks vulnerability (XS Leaks). Since this vulnerability is based on the core mechanism of modern web browsers, it's also called a browser side-channel attack. XS-Leaks attacks seek to exploit the fact of seemingly insignificant information that is exchanged in cross-site communications between sites. This information infers answers to the previously asked questions about the victim's user account. Please take a look at the examples provided below:
 
-- Is the user currently logged in?
-- Is the user ID 1337?
-- Is the user an administrator?
-- Does the user have a person with a particular email address in their contact list?
+* 当前用户是否登录？
+* 用户ID是否为1337？
+* 用户是否为管理员？
+* 用户的联系人列表中是否具有特定电子邮件地址的人？
 
-On the basis of such questions, the attacker might try to deduce the answers, depending on the application's context. In most cases, the answers will be in binary form (yes or no). The impact of this vulnerability depends strongly on the application's risk profile. Despite this, XS Leaks may pose a real threat to user privacy and anonymity.
+根据这些问题，攻击者可能会根据应用程序的上下文推断答案。在大多数情况下，答案将以二进制形式（是或否）给出。此漏洞的影响在很大程度上取决于应用程序的风险状况。尽管如此，XS泄密可能对用户隐私和匿名性构成真正的威胁。
 
-## Attack vector
+## 攻击向量
 
 ![XS Leaks Attack Vector](../assets/XS_Attack_Vector.png)
 
-- The entire attack takes place on the victim's browser side - just like an XSS attack
-- In some cases, the victim must remain on the attacker's site longer for the attack to succeed.
+- 整个攻击过程发生于受害者的浏览器下-类似于XSS攻击
+- 在某些情况下，受害者必须在攻击者的网站上停留较长的时间，才能使攻击成功
 
-## Same Origin Policy (SOP)
 
-Before describing attacks, it's good to understand one of the most critical security mechanisms in browsers - The Same-origin Policy. A few key aspects:
 
-- Two URLs are considered as **same-origin** if their **protocol**, **port**, and **host** are the same
-- Any origin can send a request to another source, but due to the Same-origin Policy, they will not be able to read the response directly
-- Same Origin Policy may be relaxed by [Cross Origin Resource Sharing (CORS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
+## 同源策略 (SOP)
 
-| Origin A              | Origin B                  | Same origin?                   |
-| --------------------- | ------------------------- | ------------------------------ |
-| `https://example.com` | `http://sub.example.com`  | No, different hosts            |
-| `https://example.com` | `https://example.com:443` | Yes! Implicit port in Origin A |
+在介绍攻击之前，最好先了解浏览器中最关键的安全机制之一-同源策略。几个关键方面： 
 
-Although the SOP principle protects us from accessing information in cross-origin communication, XS-Leaks attacks based on residual data can infer some information.
+- 如果两个URL的**协议**、**端口**和**主机(IP/子域名)**相同，则认为它们是**的源相同**
+- 任何源都可以向另一个源发送请求，但由于相同的源策略，它们将无法直接读取响应
+- 可通过[跨源资源共享(CORS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)来控制同源策略的严格度
+
+| 源 A                  | 源  B                     | 同源?                       |
+| --------------------- | ------------------------- | --------------------------- |
+| `https://example.com` | `http://sub.example.com`  | 不，host(主机/IP/域名) 不同 |
+| `https://example.com` | `https://example.com:443` | 是的! 源A的隐式端口         |
+
+虽然SOP原则保护我们在跨源通信中访问信息，但基于剩余数据的XS泄漏攻击可以推断出一些有价值的信息。 
+
 
 ## SameSite Cookies
 
-The SameSite attribute of a cookie tells the browser whether it should include the cookie in the request from the other site. The SameSite attribute takes the following values:
+cookie的SameSite属性告诉浏览器是否应该在来自其他站点的请求中包含cookie。SameSite属性有以下值：
 
-- `None` -  the cookie will be attached to a request from another site, but it must be sent over a secure HTTPS channel
-- `Lax` - the cookie will be appended to the request from another page if the request method is GET and the request is made to top-level navigation (i.e. the navigation changes the address in the browser top bar)
-- `Strict` - the cookie will never be sent from another site
+- `None` - cookie将附加到其他站点发起的请求，但必须通过安全HTTPS通道发送
+- `Lax` - 如果请求方法为GET，并且请求为顶级导航（即导航更改浏览器顶栏中的地址），则cookie将附加到来自另一个页面的请求中
+- `Strict` - cookie永远不会从其他站点发送
 
-It is worth mentioning here the attitude of Chromium based browsers in which cookies without SameSite attribute set by default are treated as Lax.
+这里值得一提的是，基于Chromium的浏览器的态度是，默认情况下未设置SameSite属性的cookie被视为`Lax` 。
 
-Cookies with the appropriate SameSite attribute provide a **strong defense** against both XS Leaks and also [CSRF attacks](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html).
+具有适当SameSite属性的Cookie提供**强大的防御**应对XS泄漏和[CSRF攻击](./Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.md) 。
 
-### How do we know that two sites are SameSite?
+
+
+### 如何得知两个站点间的SameSite属性?
 
 ![XS Leaks eTLD explanation](../assets/XS_Leaks_eTLD.png)
 
-In the context of the SameSite attribute, we consider the site to be the combination of the TLD (top-level domain) and the domain name before it. For example:
+在SameSite属性的上下文中，我们将站点视为TLD（顶级域）及其前面的域名的组合。例如： 
 
-| Full URL                                  | Site (eTLD+1) |
+| 完整的URL                                 | 根域(eTLD+1)  |
 | ----------------------------------------- | ------------- |
 | `https://example.com:443/data?query=test` | `example.com` |
 
-Why are we talking about eTLD+1 and not just TLD+1? It's because of domains like `.github.io` or `.eu.org`. Such parts are not atomic enough to be compared well. For this reason, a list of "effective" TLDs (eTLDs) was created and can be found [here](https://publicsuffix.org/list/public_suffix_list.dat).
+为什么我们谈论的是eTLD+1，而不仅仅是TLD+1？这是因为像`github.io`或`eu.org`这样的域的原子性不足，不能很好的进行比较说明。为此，一种“有效”的TLDs（ETLDs）列表被创造了出来，可在[此处](https://publicsuffix.org/list/public_suffix_list.dat)找到。 （[D] e 即 effective, etld详细参考https://juejin.cn/post/6844904098148384776，可以将etld理解为公共认可的后缀)
 
-Sites that have the same eTLD+1 are considered SameSite, examples:
+对于拥有相同eTLD+1的站点被认为满足SameSite，例如:
 
-| Origin A                  | Origin B                   | SameSite?                    |
-| ------------------------- | -------------------------- | ---------------------------- |
-| `https://example.com`     | `http://example.com`       | Yes, schemes don't matter    |
-| `https://evil.net`        | `https://example.com`      | No, different eTLD+1         |
-| `https://sub.example.com` | `https://data.example.com` | Yes, subdomains don't matter |
+| 源A                  | 源B                  | SameSite?                    |
+| ------------------------- | -------------------------- | ---------------------        |
+| `https://example.com`     | `http://example.com`       | 是, 协议无关紧要 |
+| `https://evil.net`        | `https://example.com`      | 否, eTLD+1不同       |
+| `https://sub.example.com` | `https://data.example.com` | 是, 子域名无关紧要 |
 
-For more information about SamSite, see the excellent article [Understanding "same-site"](https://web.dev/same-site-same-origin/).
+关于SameSite的更多信息，阅读优秀文章 [Understanding "same-site"](https://web.dev/same-site-same-origin/).
 
-## Attacks using the element ID attribute
 
-Elements in the DOM can have an ID attribute that is unique within the document. For example:
+
+## 攻击方式1：使用元素ID属性
+
+DOM中的元素在document中具有唯一的ID属性。例如： 
 
 ```html
 <button id="pro">Pro account</button>
 ```
 
-The browser will automatically focus on an element with a given ID if we append a hash to the URL, e.g. `https://example.com#pro`. What's more JavaScript [focus event](https://developer.mozilla.org/en-US/docs/Web/API/Element/focus_event) gets fired. The attacker may try to embed the application in the iframe with specific source on its own controlled page:
+如果我们在URL中添加属性值，浏览器将自动聚焦到给定ID的元素上，例如`https://example.com#pro`会有下图效果. JavaScript[焦点事件](https://developer.mozilla.org/en-US/docs/Web/API/Element/focus_event)搞砸了更多的事情。攻击者会尝试在其自己的受控页面所嵌入的iframe中设置特定的源(src属性值)：
 
 ![XS-Leaks-ID](../assets/XS_Leaks_ID.png)
 
-then add listener in main document for [blur event](https://developer.mozilla.org/en-US/docs/Web/API/Element/blur_event) (the opposite of focus). When the victim visits the attackers site, the blur event gets fired. The attacker will be able to conclude that the victim has a pro account.
+然后在主document 中添加侦听器, 观察[模糊事件](https://developer.mozilla.org/en-US/docs/Web/API/Element/blur_event)(焦点的反向事件) 。当受害者访问攻击者部署的恶意页面时，就会触发blur(模糊)事件。攻击者将能够断定受害者拥有pro帐户。 ([D] 可以理解下，即攻击者提前分析了example.com，发现若拥有Pro账号的用户，其页面会有pro这个ID属性，因此可以利用上述技巧判断该用户是否拥有Pro账号)
 
-### Defense
 
-#### Framing protection
 
-If you don't need other origins to embed your application in a frame, you can consider using one of two mechanisms:
+### 防御措施
 
-- **Content Security Policy frame ancestors** directive. [Read more about syntax](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-src).
-- **X-Frame-Options**  - mainly if you want to support old browsers.
+#### Framing保护
 
-Setting up framing protection efficiently blocks the ability to embed your application in a frame on the attacker-controlled origin and protects from other attacks like [Clickjacking](https://cheatsheetseries.owasp.org/cheatsheets/Clickjacking_Defense_Cheat_Sheet.html).
+如果不允许其他源站将你的站点嵌入其frame中，可以考虑使用以下两种机制之一： 
 
-#### Fetch metadata (Sec-Fetch-Dest)
+- **Content Security Policy frame ancestors** 指令. [Read more about syntax](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-src).
+- **X-Frame-Options**  -  主要是如果您想支持旧浏览器。 
 
-Sec-Fetch-Dest header provides us with a piece of information about what is the end goal of the request. This header is included automatically by the browser and is one of the headers within the Fetch Metadata standard.
+设置framing保护可有效阻止攻击者控制的源站上的frame中嵌入自己的站点程序，并可防止其他攻击，如[点击劫持](https://cheatsheetseries.owasp.org/cheatsheets/Clickjacking_Defense_Cheat_Sheet.html)。
 
-With Sec-Fetch-Dest you can build effective own resource isolation policies, for example:
+#### Fetch元数据 (Sec-Fetch-Dest)
+
+Sec-Fetch-Dest头为我们提供了一条关于最终目标请求的信息。此标头由浏览器自动包含，并且是Fetch元数据标准中的标头之一。 
+
+使用Sec-Fetch-Dest，您可以构建有效的自有资源隔离策略，例如：
 
 ```javascript
 app.get('/', (req, res) => {
@@ -111,20 +120,25 @@ app.get('/', (req, res) => {
 
 ![XS Leaks Sec-Fetch-Dest](../assets/XS_Leaks_Sec_Fetch_Dest.png)
 
-If you want to use headers from the Fetch Metadata standard, make sure that your users' browsers support this standard (you can check it [here](https://caniuse.com/?search=sec-fetch)). Also, think about using the appropriate fallback in code if the Sec-Fetch-* header is not included in the request.
+如果要使用Fetch元数据标准中的标头，请确保用户的浏览器支持此标准（您可以在[此处](https://caniuse.com/?search=sec-fetch)进行检查）。此外，如果请求中未包含Sec Fetch-*头，请考虑在代码中使用适当的回退。
 
-## Attacks based on error events
 
-Embedding from resources from other origins is generally allowed. For example, you can embed an image from another origin or even script on your page. What is not permitted is reading cross-origin resource due the SOP policy.
 
-When the browser sends a request for a resource, the server processes the request and decides on the response e.g. (200 OK or 404 NOT FOUND). The browser receives the HTTP response and based on that, the appropriate JavaScript event is fired (onload or onerror).
+## 攻击方式2：基于错误事件
 
-In this way, we can try to load resources and, based on the response status, infer whether they exist or not in the context of the logged-in victim. Let's look at the following situation:
+通常，在页面中是允许嵌入来自其他源的资源。例如，您可以在页面上嵌入来自其他来源的图像，甚至脚本。
 
-- `GET /api/user/1234` - 200 OK - currently logged-in user is 1234 because we successfully loaded resource ([onload](https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onload) event fired)
-- `GET /api/user/1235` - 401 Unauthorized  - 1235 is not the ID of the currently logged in user ([onerror](https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror) event will be triggered)
+但是，由于SOP政策，不会允许读取跨来源资源响应的数据。
 
-Given the above example, an attacker can use JavaScript on his controlled origin to guess the victim's ID by enumerating over all the values in a simple loop.
+当浏览器发送资源请求时，服务器处理该请求并决定响应，例如（200 OK或404 NOT FOUND）。浏览器接收HTTP响应，并在此基础上触发相应的JavaScript事件（onload或onerror）。
+
+
+通过这种方式，我们可以尝试加载资源，并根据响应状态推断它们是否存在于登录受害者的上下文中。让我们看看以下情况：
+
+- `GET /api/user/1234` - 200 OK - 当前登录的用户是1234，因为我们成功加载了资源（[onload](https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onload)已触发事件）
+- `GET /api/user/1235` - 401 Unauthorized  - 1234不是当前登录用户的ID（[onerror](https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror)事件将被触发） 
+
+在上述示例中，攻击者可以在其受控源上使用JavaScript，通过在一个简单循环中枚举所有值来猜测受害者的ID。
 
 ```javascript
 function checkId(id) {
@@ -146,33 +160,33 @@ for (const id of ids) {
 }
 ```
 
-Note that the attacker here does not care about reading the response body even though it would not be able to due to solid isolation mechanisms in browsers such as [Cross-Origin Resource Blocking](https://www.chromium.org/Home/chromium-security/corb-for-developers). All it needs is the success information it receives when the `onload` event fires.
+请注意，此处的攻击者并不关心读取响应正文，即使由于浏览器中的可靠隔离机制（如[跨源资源阻止](https://www.chromium.org/Home/chromium-security/corb-for-developers)）而无法读取响应正文，而攻击者所需要的只是获取 `onload` 事件是否成功触发的信息。
 
-### Defense
+### 防御措施
 
-#### SubResource protection
+#### 子资源保护
 
-In some cases, mechanism of special unique tokens may be implemented to protect our sensitive endpoints.
+在某些情况下，可以实现特殊的唯一令牌机制来保护我们的敏感端点（接口)。
 
 ```
 /api/users/1234?token=be930b8cfb5011eb9a030242ac130003
 ```
 
-- Token should be long and unique
-- The back-end must correctly validate the token passed in the request
+- Token 需要足够长且唯一
+- 后端必须正确验证请求中传递的Token
 
-Although it is pretty effective, the solution generates a significant overhead in proper implementation.
+虽然它非常有效，但该解决方案在适当的实现中会产生很大的开销。
 
-#### Fetch metadata (Sec-Fetch-Site)
+#### Fetch元数据(Sec-Fetch-Site)
 
-This header specifies where the request was sent from, and it takes the following values:
+此标头表示从何处发送请求，并采用以下值：
 
 - `cross-site`
 - `same-origin`
 - `same-site`
-- `none` - user directly reached the page
+- `none` - 用户直接访问页面
 
-Like Sec-Fetch-Dest, this header is automatically appended by the browser to each request and is part of the Fetch Metadata standard. Example usage:
+就像 Sec-Fetch-Dest, 此标头由浏览器自动附加到每个请求，并且是Fetch元数据标准的一部分。示例用法： 
 
 ```javascript
 app.get('/api/users/:id', authorization, (req, res) => {
@@ -188,17 +202,19 @@ app.get('/api/users/:id', authorization, (req, res) => {
 
 #### Cross-Origin-Resource-Policy (CORP)
 
-If the server returns this header with the appropriate value, the the browser will not load resources from our site or origin (even static images) in another application. Possible values:
+如果服务器返回带有对应值的此标头，浏览器将不会从我们的站和源下的（甚至静态图像）资源加载给其他人的站点。可能的值：
 
 - `same-site`
 - `same-origin`
 - `cross-origin`
 
-Read more about CORP [here](https://resourcepolicy.fyi/).
+阅读更多CORP，[here](https://resourcepolicy.fyi/).
 
-## Attacks on postMessage communication
 
-Sometimes in controlled situations we would like despite SOP to exchange information between different origins. We can use the postMessage mechanism. See below example:
+
+## 攻击方式3：利用postMessage通信
+
+有时在受控情况下，我们希望在不同源之间交换信息。我们可以使用postMessage机制。请参见以下示例： 
 
 ```javascript
 // Origin: http://example.com
@@ -212,11 +228,11 @@ window.addEventListener('message', e => {
 });
 ```
 
-### Defense
+### 防御
 
-#### Specify strict targetOrigin
+#### 指定严格的targetOrigin
 
-To avoid situations like the one above, where an attacker manages to get the reference for a window to receive a message, always specify the exact `targetOrigin` in postMessage. Passing to the `targetOrigin` wildcard `*` causes any origin to receive the message.
+要避免出现上述情况，即攻击者通过window的事件监听接收消息，请始终在postMessage中指定确切的`targetOrigin`。传递到`targetOrigin`是正确的，而留空或者通配符`*`会导致任何源可以接收消息。
 
 ```javascript
 // Origin: http://example.com
@@ -230,42 +246,48 @@ window.addEventListener('message', e => {
 });
 ```
 
-## Frame counting attacks
 
-Information about the number of loaded frames in a window can be a source of leakage. Take for example an application that loads search results into a frame, if the results are empty then the frame does not appear.
+
+## 攻击方式4：利用Frame计数
+
+有关window中加载frame的数量信息可能是泄漏源。以将搜索结果加载到frame中的程序为例，如果结果为空，则frame不会显示。
 
 ![XS-Leaks-Frame-Counting](../assets/XS_Leaks_Frame_Counting.png)
 
-An attacker can get information about the number of loaded frames in a window by counting the number of frames in a `window.frames` object.
+攻击者可以通过 `window.frames` 对象返回的的frame数来获取有关window中已加载的frame数的信息。
 
-So finally, an attacker can obtain the email list and, in a simple loop, open subsequent windows and count the number of frames. If the number of frames in the opened window is equal to 1, the email is in the client's database of the application used by the victim.
 
-### Defense
+例如，攻击者可以获取电子邮件列表，通过在简单的循环枚举，打开子window并计算frame数。如果打开的窗口中的frame数等于1，则电子邮件位于受害者使用的客户端数据库中。
+
+### 防御
 
 #### Cross-Origin-Opener-Policy (COOP)
 
-Setting this header will prevent cross-origin documents from opening in the same browsing context group. This solution ensures that document A opening another document will not have access to the `window`object. Possible values:
+设置此标头将阻止在同一浏览上下文组中打开跨源document。此解决方案确保打开另一个document的document将无法访问`window`对象。可能的值：
 
 - `unsafe-none`
 - `same-origin-allow-popups`
 - `same-origin`
 
-In case the server returns for example `same-origin` COOP header, the attack fails:
+如果服务器返回例如`same-origin`的COOP标头，则攻击将失败：
 
 ```javascript
 const win = window.open('https://example.com/admin/customers?search=john%40example.com');
 console.log(win.frames.length) // Cannot read property 'length' of null
 ```
 
-## Attacks using browser cache
 
-Browser cache helps to significantly reduce the time it takes for a page to load when revisited. However, it can also pose a risk of information leakage. If an attacker is able to detect whether a resource was loaded from the cache after the load time, he will be able to draw some conclusions based on it.
 
-The principle is simple, a resource loaded from cache memory will load incomparably faster than from the server.
+## 攻击方式5：利用浏览器缓存
+
+浏览器缓存有助于显著减少重新访问页面时加载页面所需的时间。然而，它也可能造成信息泄漏的风险。如果攻击者能够获取资源的加载时间之后，就可以基于此得出是否从缓存中加载了资源，并由此推断处一些信息与结论。
+
+
+原理很简单，从缓存加载的资源的加载速度将比从服务器加载的速度快得多。
 
 ![XS Leaks Cache Attack](../assets/XS_Leaks_Cache_Attack.png)
 
-An attacker can embed a resource on their site that is only accessible to a user with the admin role. Then, using JavaScript, read the load time of a particular resource and, based on this information, deduce whether the resource is in cache or not.
+攻击者可以在其站点上嵌入资源，该资源只能由具有管理员角色的用户访问。然后，使用JavaScript读取特定资源的加载时间，并根据此信息推断资源是否在缓存中。
 
 ```javascript
     // Threshold above which we consider a resource to have loaded from the server
@@ -280,31 +302,35 @@ An attacker can embed a resource on their site that is only accessible to a user
     }
 ```
 
-### Defense
+### 防御
 
-#### Unpredictable tokens for images
+#### 图像的不可预测标记
 
-This technique is accurate when the user wants the resources to still be cached, while an attacker will not be able to find out about it.
+当用户希望仍缓存资源，而攻击者无法找到token时，此技术是准确的。
 
 ```
 /avatars/admin.svg?token=be930b8cfb5011eb9a030242ac130003
 ```
 
-- Tokens should be unique in context of each user
-- If an attacker cannot guess this token, it will not be able to detect whether the resource was loaded from cache
+- Tokens在每个用户的上下文中应该是唯一的
+- 如果攻击者猜不到该Token，则无法检测资源是否已从缓存加载
 
-#### Using the Cache-Control header
+#### 使用 Cache-Control 头
 
-You can disable the cache mechanism if you accept the degraded performance related to the necessity of reloading resources from the server every time a user visits the site. To disable caching for resources you want to protect, set the response header `Cache-Control: no-store`.
+如果您接受每次用户访问站点时都需要从服务器重新加载资源导致的性能下降，则可以禁用缓存机制。要禁用所需保护的资源的缓存，请设置响应标头`Cache-Control: no-store`.。
 
-## Quick recommendations
 
-- If your application uses cookies, make sure to set the appropriate [SameSite attribute](#samesite-cookies).
-- Think about whether you really want to allow your application to be embedded in frames. If not, consider using the mechanisms described in the [framing protection](#framing-protection) section.
-- To strengthen the isolation of your application between other origins, use [Cross Origin Resource Policy](#cross-origin-resource-policy-corp) and [Cross Origin Opener Policy](#cross-origin-opener-policy-coop) headers with appropriate values.
-- Use the headers available within Fetch Metadata to build your own resource isolation policy.
 
-## References
+## 小贴士
+
+- 如果应用程序使用Cookie，请确保设置适当的[SameSite属性](#samesite-cookies)。
+- 考虑是否真的希望将站点嵌入到frame中。如果没有，请考虑使用[frame保护](#Framing保护)一节中描述的机制。
+- 要加强站点页面在其他源之间的隔离，请使用具有适当值的[跨源资源策略 (CORP)](#Cross-Origin-Resource-Policy (CORP))和[跨源开放器策略(COOP)](#Cross-Origin-Opener-Policy (COOP))标头。 
+- 使用Fetch元数据中可用的头来构建您自己的资源隔离策略。
+
+
+
+## 参考
 
 ### XS Leaks
 

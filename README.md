@@ -41,7 +41,7 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
     * [防范基于DOM的XSS](./cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.md) - 1%
     * [XSS过滤绕过(逃逸)](./cheatsheets/XSSFilterEvasionCheatSheet.md) - 1%
     * [防范XSS](./cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.md) - 1%
-    * [防范跨站泄露(xs-leak)](./cheatsheets/XS_Leaks_Cheat_Sheet.md) - 1%
+    * [防范跨站泄露(xs-leak)](./cheatsheets/XS_Leaks_Cheat_Sheet.md) - 100%
     
   * 文件操作
 
