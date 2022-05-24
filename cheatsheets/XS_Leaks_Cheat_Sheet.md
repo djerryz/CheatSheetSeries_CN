@@ -60,7 +60,7 @@ cookie的SameSite属性告诉浏览器是否应该在来自其他站点的请求
 | ----------------------------------------- | ------------- |
 | `https://example.com:443/data?query=test` | `example.com` |
 
-为什么我们谈论的是eTLD+1，而不仅仅是TLD+1？这是因为像`github.io`或`eu.org`这样的域的原子性不足，不能很好的进行比较说明。为此，一种“有效”的TLDs（ETLDs）列表被创造了出来，可在[此处](https://publicsuffix.org/list/public_suffix_list.dat)找到。 （[D] e 即 effective, etld详细参考https://juejin.cn/post/6844904098148384776，可以将etld理解为公共认可的后缀)
+为什么我们谈论的是eTLD+1，而不仅仅是TLD+1？这是因为像`github.io`或`eu.org`这样的域的原子性不足，不能很好的进行比较说明。为此，一种“有效”的TLDs（ETLDs）列表被创造了出来，可在[此处](https://publicsuffix.org/list/public_suffix_list.dat)找到。 （[D] e 即 effective, 可将etld理解为公共认可的后缀, etld可参考https://juejin.cn/post/6844904098148384776)
 
 对于拥有相同eTLD+1的站点被认为满足SameSite，例如:
 
@@ -126,9 +126,9 @@ app.get('/', (req, res) => {
 
 ## 攻击方式2：基于错误事件
 
-通常，在页面中是允许嵌入来自其他源的资源。例如，您可以在页面上嵌入来自其他来源的图像，甚至脚本。
+通常，在页面中是允许嵌入来自其他源的资源。例如，您可以在页面上嵌入来自其他源的图像，甚至脚本。
 
-但是，由于SOP政策，不会允许读取跨来源资源响应的数据。
+但是，由于SOP政策，不会允许读取跨资源响应的数据。
 
 当浏览器发送资源请求时，服务器处理该请求并决定响应，例如（200 OK或404 NOT FOUND）。浏览器接收HTTP响应，并在此基础上触发相应的JavaScript事件（onload或onerror）。
 
