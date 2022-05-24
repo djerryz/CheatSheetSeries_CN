@@ -12,7 +12,7 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
 
 >Total Docs: 75篇
 >
->Finish: 11篇
+>Finish: 12篇
 
 下面的分类基于个人认知，为了方便整理相关内容和透视知识点。 
 
