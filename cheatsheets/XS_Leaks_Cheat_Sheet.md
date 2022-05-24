@@ -2,7 +2,7 @@
 
 ## 介绍
 
-This article describes examples of attacks and defenses against cross-site leaks vulnerability (XS Leaks). Since this vulnerability is based on the core mechanism of modern web browsers, it's also called a browser side-channel attack. XS-Leaks attacks seek to exploit the fact of seemingly insignificant information that is exchanged in cross-site communications between sites. This information infers answers to the previously asked questions about the victim's user account. Please take a look at the examples provided below:
+本文介绍了针对跨站泄漏漏洞（XS泄漏）的攻击和防御示例。由于此漏洞基于现代web浏览器的核心机制，因此也称为浏览器侧通道攻击。XS泄密攻击试图利用站点间跨站通信交换的看似无关紧要的信息这一事实。通过信息推断并获取受害者先前在网页上回答过的帐户(找回/注册)问题的答案，实现数据窃取。请查看以下示例：
 
 * 当前用户是否登录？
 * 用户ID是否为1337？
