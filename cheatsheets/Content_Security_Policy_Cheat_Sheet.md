@@ -2,7 +2,7 @@
 
 ## 介绍
 
-本文提出了一种将**深度防御**概念集成到web应用程序客户端的方法。通过从服务器注入内容安全策略（CSP）头，浏览器可以感知并能够保护用户免受当前所访问的页面，加载内容时的动态调用带来的风险。([D] 可以理解为动态执行JS，DOM变更时的限制策略)
+本文提出了一种将**深度防御**概念集成到web应用程序客户端的方法。通过从服务器返回内容安全策略（CSP）头，浏览器可以感知并能够保护用户免受当前所访问的页面、加载内容的动态调用带来的风险。([D] 可以理解为动态执行JS，DOM变更时的限制策略)
 
 ## 背景
 
@@ -20,7 +20,7 @@ CSP通过以下方式防御XSS攻击：
 <script>document.body.innerHTML='defaced'</script>
 ```
 
-上述代码则不会执行
+上述代码不会执行
 
 #### 2. 限制远程脚本
 
@@ -30,11 +30,11 @@ CSP通过以下方式防御XSS攻击：
 <script src="https://evil.com/hacked.js"></script>
 ```
 
-上述代码则不会执行
+上述代码不会执行
 
 #### 3. 限制不安全的JavaScript
 
-通过防止页面执行文本到JavaScript的功能，如`eval`，网站将不会受到以下漏洞的影响：
+通过防止页面执行文本中JavaScript的功能，如`eval`，网站将不会受到以下漏洞的影响：
 
 ```js
 // A Simple Calculator
@@ -67,9 +67,9 @@ console.log(`The sum is: ${sum}`);
 
 ### 防御frame攻击
 
-点击劫持等攻击和浏览器端通道攻击（xs泄漏）的某些变体需要恶意网站在frame中加载目标网站。
+点击劫持等攻击和浏览器信道攻击（xs泄漏）的某些变体需要目标网站在frame中加载恶意网站。
 
-历史上，`X-Frame-Options`头一直用于此目的，但它已被`Frame-Options`CSP指令淘汰。
+历史上，`X-Frame-Options`头一直用于此目的，但它已被CSP的`Frame-Options`指令淘汰。
 
 ## 纵深防御
 
@@ -79,21 +79,21 @@ console.log(`The sum is: ${sum}`);
 
 ## CSP不能替代安全开发
 
-CSP**不应**被视为针对XSS的唯一防御机制。您仍然必须遵循良好的开发实践，例如[防范XSS](./Cross_Site_Scripting_Prevention_Cheat_Sheet.md)中描述的实践，然后在其上部署CSP作为额外的安全层。
+CSP**不应**被视为针对XSS的唯一防御机制。您仍然必须遵循良好的开发实践，例如[防范XSS](./Cross_Site_Scripting_Prevention_Cheat_Sheet.md)中描述的实践，然后再部署CSP作为额外的安全层。
 
 ## 策略传递
 
- 您可以通过三种方式向网站传递内容安全策略。 
+您可以通过三种方式向网站传递内容安全策略。 
 
 ### 1. Content-Security-Policy 头
 
-从web服务器发送内容安全策略HTTP响应头。
+从web服务器返回内容安全策略HTTP响应头。
 
 ```text
 Content-Security-Policy: ...
 ```
 
-使用头是首选方式，支持完整的CSP功能集。将其发送到所有HTTP响应中，而不仅仅是索引页。
+使用头是首选方式，支持完整的CSP功能集。将其发送到所有HTTP响应中，而不仅仅只在index页返回。
 
 ### 2. Content-Security-Policy-Report-Only 头
 
@@ -103,10 +103,10 @@ Content-Security-Policy: ...
 Content-Security-Policy-Report-Only: ...
 ```
 
-尽管如此，如果使用了`report to`和`report uri`指令，违反策略的上报事件仍会打印到控制台并传递到违反策略的端点。
+尽管如此，如果使用了`report to`和`report uri`指令，违反策略的事件仍会打印到控制台并传递和上报到指定的端点。
 
 
-浏览器完全支持网站同时使用 `Content-Security-Policy` 和`Content-Security-Policy-Report-Only` 的能力，没有任何问题。例如，可以使用这种模式来运行严格的 `Report-Only` 策略（会发现存在许多违反策略的上报事件），同时使用更宽松的强制策略（以避免破坏合法的站点功能）。
+浏览器完全支持网站同时使用 `Content-Security-Policy` 和`Content-Security-Policy-Report-Only` 的能力，没有任何问题。例如，可以使用这种模式来运行严格的 `Report-Only` 策略（会发现存在许多违反策略的上报事件），同时使用更宽松的强制策略（以避免破坏站点合法的功能）。
 
 ### 3. Content-Security-Policy 元标签
 
@@ -119,15 +119,15 @@ Content-Security-Policy-Report-Only: ...
 <meta http-equiv="Content-Security-Policy" content="...">
 ```
 
-几乎所有东西都仍然受到支持，包括完整的XSS防御。但是，您将无法使用[frame防御](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors),，[沙箱](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/sandbox)，[日志记录违反CSP策略的端点](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/report-to)
+几乎所有东西都仍受到支持，包括完整的XSS防御。但是，您将无法使用[frame防御](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors),，[沙箱](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/sandbox)，[日志记录违反CSP策略的端点](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/report-to)
 
-### HTTP Headers
+### HTTP头
 
 以下头用于CSP.
 
 - `Content-Security-Policy` : W3C规范标准头. 由Firefox 23+、Chrome 25+和Opera 19支持+
-- `Content-Security-Policy-Report-Only` : W3C规范标准头.由Firefox 23+、Chrome 25+和Opera 19+支持，策略为非阻塞（“故障开放”），并将报告发送到“report-uri”（或更新的“report-to”）指令指定的URL。这通常被用作在阻塞模式下利用CSP（“故障关闭”）的前兆
-- `请勿` 使用X-Content-Security-Policy或X-WebKit-CSP。它们的实现已经过时（自Firefox 23、Chrome 25以来）、有约束、不一致，而且存在令人难以置信的缺陷。
+- `Content-Security-Policy-Report-Only` : W3C规范标准头.由Firefox 23+、Chrome 25+和Opera 19+支持，策略为非阻塞（“故障开放”），并将报告发送到`report-uri`（或更新的`report-to`）指令指定的URL。这通常被用作在阻塞模式下利用CSP（“故障关闭”）的前兆
+- 请勿 使用`X-Content-Security-Policy`或`X-WebKit-CSP`。它们的实现已经过时（自Firefox 23、Chrome 25以来）、有约束、不一致，而且存在令人难以置信的缺陷。
 
 ## CSP指令
 
@@ -137,104 +137,106 @@ Content-Security-Policy-Report-Only: ...
 
 Fetch指令告诉浏览器要信任的位置，并从中加载资源。
 
-Fetch directives tell the browser the locations to trust and load resources from.
+大多数fetch指令都有特定的[w3中所指定的fallback列表](https://www.w3.org/TR/CSP3/#directive)。该列表允许对脚本、图像、文件等数据源进行粒度级控制。
 
-Most fetch directives have a certain [fallback list specified in w3](https://www.w3.org/TR/CSP3/#directive-fallback-list). This list allows for granular control of the source of scripts, images, files, etc.
-
-- `child-src` allows the developer to control nested browsing contexts and worker execution contexts.
-- `connect-src` provides control over fetch requests, XHR, eventsource, beacon and websockets connections.
-- `font-src` specifies which URLs to load fonts from.
-- `img-src` specifies the URLs that images can be loaded from.
-- `manifest-src` specifies the URLs that application manifests may be loaded from.
-- `media-src` specifies the URLs from which video, audio and text track resources can be loaded from.
-- `prefetch-src` specifies the URLs from which resources can be prefetched from.
-- `object-src` specifies the URLs from which plugins can be loaded from.
-- `script-src` specifies the locations from which a script can be executed from. It is a fallback directive for other script-like directives.
-    - `script-src-elem` controls the location from which execution of script requests and blocks can occur.
-    - `script-src-attr` controls the execution of event handlers.
-- `style-src` controls from where styles get applied to a document. This includes `<link>` elements, `@import` rules, and requests originating from a `Link` HTTP response header field.
-    - `style-src-elem` controls styles except for inline attributes.
-    - `style-src-attr` controls styles attributes.
-- `default-src` is a fallback directive for the other fetch directives. Directives that are specified have no inheritance, yet directives that are not specified will fall back to the value of `default-src`.
+- `child-src` 允许开发人员控制嵌套在浏览的上下文和辅助执行的上下文。
+- `connect-src` 提供对获取请求、XHR、eventsource、beacon和websockets连接的控制。
+- `font-src` 指定加载字体的URL。
+- `img-src` 指定可从中加载图像的URL。
+- `manifest-src` 指定可以从中加载应用程序清单的URL。
+- `media-src` 指定可以从中加载视频、音频和文本轨迹资源的URL。
+- `prefetch-src` 指定可以从中预取资源的URL。
+- `object-src` 指定可以从中加载插件的URL。
+- `script-src` 指定可以从中执行脚本的位置。它是其他类脚本指令的fallback指令。
+    - `script-src-elem` 控制执行脚本请求和块的位置。
+    - `script-src-attr` 控制事件处理程序的执行。
+- `style-src` 控件将样式应用于文档的位置。这包括`<link>`元素、`@import`规则和来自`link`的HTTP响应头字段的请求。
+    - `style-src-elem` 控制除内联属性外的样式。
+    - `style-src-attr` 控制样式属性。
+- `default-src` 是其他fetch指令的fallback指令。指定的指令没有继承，但未指定的指令将返回`default src`的值。
 
 ### Document 指令
 
-Document directives instruct the browser about the properties of the document to which the policies will apply to.
+Document 指令向浏览器指示将策略应用到文档的属性。
 
-- `base-uri` specifies the possible URLs that the `<base>` element can use.
-- `plugin-types` limits the types of resources that can be loaded into the document (*e.g.* application/pdf). 3 rules apply to the affected elements, `<embed>` and `<object>`:
-    - The element needs to explicitly declare its type.
-    - The element's type needs to match the declared type.
-    - The element's resource need to match the declared type.
-- `sandbox` restricts a page's actions such as submitting forms.
-    - Only applies when used with the request header `Content-Security-Policy`.
-    - Not specifying a value for the directive activates all of the sandbox restrictions. `Content-Security-Policy: sandbox;`
-    - [Sandbox syntax](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/sandbox#Syntax)
+- `base-uri` 指定 `<base>`元素可使用的URL。
+- `plugin-types` 限制可加载到文档中的资源类型（*例如*application/pdf）。3条规则适用于受影响的元素以及`<embed>`和`<object>`：
+    - 元素需要显式声明其类型。
+    - 元素的类型需要与声明的类型匹配。
+    - 元素的资源需要与声明的类型匹配。 
+- `sandbox`限制页面的操作，例如提交表单。
+    - 仅在与请求头`Content-Security-Policy`一起使用时适用。Only applies when used with the request header `Content-Security-Policy`.
+    - 不为指令指定值将激活所有沙盒限制, 即`Content-Security-Policy: sandbox`
+    - [Sandbox语法](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/sandbox#Syntax)
 
 ### Navigation 指令
 
-Navigation directives instruct the browser about the locations that the document can navigate to.
+Navigation 指令指示浏览器文档可以导航到的位置。
 
-- `navigate-to` restricts the URLs which a document can navigate to by any mean ([not yet supported](https://caniuse.com/?search=navigate-to) by modern browsers in Jan 2021).
-- `form-action` restricts the URLs which the forms can submit to.
-- `frame-ancestors` restricts the URLs that can embed the requested resource inside of  `<frame>`, `<iframe>`, `<object>`, `<embed>`, or `<applet>` elements.
-    - If this directive is specified in a `<meta>` tag, the directive is ignored.
-    - This directive doesn't fallback to `default-src` directive.
-    - `X-Frame-Options` is rendered obsolete by this directive and is ignored by the user agents.
+- `navigate-to` 限制document导航到指定URL， 现代浏览器此功能[尚不支持](https://caniuse.com/?search=navigate-to)任意方式.
+- `form-action` 限制表单可以提交到的URL.
+- `frame-ancestors` 限制可以将请求的资源嵌入`<frame>`、`<iframe>`、`<object>`、`<embed>`、或`<applet>`元素中的URL。 
+    - 如果此指令在`<meta>`标记中指定，则忽略该指令。
+    - 此指令不会fallback到`default-src`指令。
+    - `X-Frame-Options`可被该指令废弃，并被user-agents忽略。
 
 ### Reporting 指令
 
-Reporting directives deliver violations of prevented behaviors to specified locations. These directives serve no purpose on their own and are dependent on other directives.
+Reporting指令将被阻止的行为的违规行为传递到指定位置。这些指令本身没有任何用途，依赖于其他指令。
 
-- `report-to` which is a groupname defined in the header in a json formatted header value.
-    - [MDN report-to documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/report-to)
-- `report-uri` directive is deprecated by `report-to`, which is a URI that the reports are sent to.
-    - Goes by the format of: `Content-Security-Policy: report-uri https://example.com/csp-reports`
+- `report-to` 定义在头部字段的组名，使用json格式赋值
+    - [MDN report-to 文档](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/report-to)
+- `report-uri` 指令被`report-to` 弃用，后者是报告所发送到的URI。
+    - 格式为: `Content-Security-Policy: report-uri https://example.com/csp-reports`
 
-In order to ensure backward compatibility, use the 2 directives in conjunction. Whenever a browser supports `report-to`, it will ignore `report-uri`. Otherwise, `report-uri` will be used.
+为了确保向后兼容性，请结合使用这两个指令。只要浏览器支持 `report-to`，它就会忽略 `report-uri`。否则，将使用 `report-uri`。
+
+
 
 ### 特别指令来源
 
-| Value            | Description                                                                 |
-|------------------|-----------------------------------------------------------------------------|
-| 'none'           | No URLs match.                                                              |
-| 'self'           | Refers to the origin site with the same scheme and port number.             |
-| 'unsafe-inline'  | Allows the usage of inline scripts or styles.                               |
-| 'unsafe-eval'    | Allows the usage of eval in scripts.                                        |
-| 'strict-dynamic' | Informs the browser to trust scripts originating from a root trusted script.|
+| 指               | 描述                                         |
+| ---------------- | -------------------------------------------- |
+| 'none'           | 没有URL匹配。                                |
+| 'self'           | 指定和origin站点相同的协议和端口号           |
+| 'unsafe-inline'  | 允许使用内联脚本或样式。                     |
+| 'unsafe-eval'    | 允许在脚本中使用eval。                       |
+| 'strict-dynamic' | 通知浏览器信任来自根受信任脚本所加载的脚本。 |
 
-*Note:* `strict-dynamic` is not a standalone directive and should be used in combination with other directive values, such as `nonce`, `hashes`, etc.
+*注意:* `strict-dynamic`不是独立的指令，应与其他指令值结合使用，例如`nonce`、`hash`等。
 
-To better understand how the directive sources work, check out the [source lists from w3c](https://w3c.github.io/webappsec-csp/#framework-directive-source-list).
+为了更好地理解指令源是如何工作的，请查看[w3c的源列表](https://w3c.github.io/webappsec-csp/#framework-directive-source-list)。
+
+
 
 ### Hashes
 
-When inline scripts are required, the `script-src 'hash_algo-hash'` is one option for allowing only specific scripts to execute.
+当需要内联脚本时，`script-src 'hash_algo-hash'`是只允许执行特定脚本的一个选项。
 
 ```text
 Content-Security-Policy: script-src 'sha256-V2kaaafImTjn8RQTWZmF4IfGfQ7Qsqsw9GWaFjzFNPg='
 ```
 
-To get the hash, look at Google Chrome developer tools for violations like this:
+要获得哈希值，请查看谷歌Chrome开发者工具中是否存在以下告警行为：
 
 > ❌ Refused to execute inline script because it violates the following Content Security Policy directive: "..." Either the 'unsafe-inline' keyword, a hash (**'sha256-V2kaaafImTjn8RQTWZmF4IfGfQ7Qsqsw9GWaFjzFNPg='**), or a nonce...
 
-You can also use this [hash generator](https://report-uri.com/home/hash). This is a great [example](https://csp.withgoogle.com/docs/faq.html#static-content) of using hashes.
+你同样可使用 [hash generator](https://report-uri.com/home/hash). 这儿有一个很棒的使用hashes的[案例](https://csp.withgoogle.com/docs/faq.html#static-content).
 
 #### 注意
 
-Using hashes is generally not a very good approach. If you change *anything* inside the script tag (even whitespace) by, e.g., formatting your code, the hash will be different, and the script won't render.
+使用hashes通常不是一个很好的方法。如果通过格式化代码等方式更改脚本标记（甚至空格）内的*任何内容*，hashes将不同，脚本将不会呈现。 
 
 ### Nonces
 
-Nonces are unique one-time-use random values that you generate for each HTTP response, and add to the Content-Security-Policy header, like so:
+nonce是唯一的，一次性使用的，为每个HTTP响应生成的随机值，并添加到内容安全策略头中，如下所示：
 
 ```js
 const nonce = uuid.v4();
 scriptSrc += ` 'nonce-${nonce}'`;
 ```
 
-You would then pass this nonce to your view (using nonces requires a non-static HTML) and render script tags that look something like this:
+然后将此nonce传递给视图（使用nonce需要非静态HTML），并呈现如下所示的脚本标记：
 
 ```js
 <script nonce="<%= nonce %>">
@@ -244,85 +246,88 @@ You would then pass this nonce to your view (using nonces requires a non-static 
 
 #### 警告
 
-**Don't** create a middleware that replaces all script tags with "script nonce=..." because attacker-injected scripts will then get the nonces as well. You need an actual HTML templating engine to use nonces.
+**不要**创建"script nonce=…"替换所有脚本标记的中间件,因为攻击者注入的脚本也将获得nonce。您需要一个实际的HTML模板引擎来使用nonce。([D] 可以理解为后端渲染时，拿到生成的nonce，然后置到CSP，这样就能前后匹配--- 不确定正确）
 
 ### strict-dynamic
 
-The `strict-dynamic` directive can be used in combination with either, hashes or nonces.
+ `strict-dynamic` 指令可以与Hashes或nonce组合使用。
 
-If the script block is creating additional DOM elements and executing JS inside of them, `strict-dynamic` tells the browser to trust those elements.
 
-Note that `strict-dynamic` is a CSP level 3 feature and not very widely supported yet. For more details, check out [strict-dynamic usage](https://w3c.github.io/webappsec-csp/#strict-dynamic-usage).
+如果script 正在创建其他DOM元素并在其中执行JS， `strict-dynamic` ”会告诉浏览器信任这些元素。
+
+
+请注意， `strict-dynamic` 是CSP 3级功能，目前尚未得到广泛支持。有关更多详细信息，请查看 [strict-dynamic 使用](https://w3c.github.io/webappsec-csp/#strict-dynamic-usage).。
 
 ## CSP策略示例
 
-### Basic CSP Policy
+### 基本CSP策略
 
-This policy prevents cross-site framing and cross-site form-submissions. It will only allow resources from the originating domain for all the default level directives and will not allow inline scripts/styles to execute.
+该策略防止跨站framing和跨站点表单提交。它只允许来自origin域的资源使用所有默认级别的指令，不允许执行内联脚本/样式。
 
-If your application functions with these restrictions, it drastically reduces your attack surface and works with most modern browsers.
 
-The most basic policy assumes:
+如果您的应用程序在这些限制下运行，它将大大减少您的攻击面，并适用于大多数现代浏览器。
 
-- All resources are hosted by the same domain of the document.
-- There are no inlines or evals for scripts and style resources.
-- There is no need for other websites to frame the website.
-- There are no form-submissions to external websites.
+最基本的策略假设：
+
+- 所有资源都由document的同域托管
+- script和样式资源没有内联或eval.
+- 不需要其他网站资源来构建网站.
+- 没有向外部网站提交表单.
 
 ```text
 Content-Security-Policy: default-src 'self'; frame-ancestors 'self'; form-action 'self';
 ```
 
-To tighten further, one can apply the following:
+要进一步拧紧，可以采用以下方法：
 
 ```text
 Content-Security-Policy: default-src 'none'; script-src 'self'; connect-src 'self'; img-src 'self'; style-src 'self'; frame-ancestors 'self'; form-action 'self';
 ```
 
-This policy allows images, scripts, AJAX, and CSS from the same origin and does not allow any other resources to load (e.g., object, frame, media, etc.).
+该策略允许来自同一来源的图像、脚本、AJAX和CSS，并且不允许加载任何其他资源（例如，object、frame、媒体等）。
 
-### Upgrading insecure requests
+### 升级不安全的请求到安全请求
 
-If the developer is migrating from HTTP to HTTPS, the following directive will ensure that all requests will be sent over HTTPS with no fallback to HTTP:
+如果开发人员正在从HTTP迁移到HTTPS，则以下指令将确保所有请求都将通过HTTPS发送，而不会fallback到HTTP：
 
 ```text
 Content-Security-Policy: upgrade-insecure-requests;
 ```
 
-### Preventing framing attacks (clickjacking, cross-site leaks)
+### 阻止framing攻击(点击劫持, 跨站泄露)
 
-- To prevent all framing of your content use:
+- 要防止内容的所有frame，请使用：
     - `Content-Security-Policy: frame-ancestors 'none';`
-- To allow for the site itself, use:
+- 仅允许站点自身, 使用:
     - `Content-Security-Policy: frame-ancestors 'self';`
-- To allow for trusted domain, do the following:
+- 要允许使用受信任域，请执行以下操作：
     - `Content-Security-Policy: frame-ancestors trusted.com;`
 
-### Strict Policy
+### 严格策略
 
-A strict policy's role is to protect against classical stored, reflected, and some of the DOM XSS attacks and should be the optimal goal of any team trying to implement CSP.
+严格策略的作用是防止经典的存储、反射和一些DOM XSS攻击，这应该是任何试图实现CSP的团队的最佳目标。
 
-Google went ahead and set up a [guide](https://web.dev/strict-csp) to adopt a strict CSP based on nonces.
+谷歌继续建立了一个[指南](https://web.dev/strict-csp)采用基于nonce的严格CSP。
 
-Based on a [presentation](https://speakerdeck.com/lweichselbaum/csp-a-successful-mess-between-hardening-and-mitigation?slide=55) at LocoMocoSec, the following two policies can be used to apply a strict policy:
+基于在Locomosec[演示文稿](https://speakerdeck.com/lweichselbaum/csp-a-successful-mess-between-hardening-and-mitigation?slide=55)，以下两种策略可用于实现严格策略：
 
-- Moderate Strict Policy:
+- 温和严格的政策：
 
 ```text
 script-src 'nonce-r4nd0m' 'strict-dynamic';
 object-src 'none'; base-uri 'none';
 ```
 
-- Locked down Strict Policy:
+- 严格锁定政策：
 
 ```text
 script-src 'nonce-r4nd0m';
 object-src 'none'; base-uri 'none';
 ```
 
-### Refactoring inline code
+### 重构内联代码
 
-When `default-src` or `script-src*` directives are active, CSP by default disables any JavaScript code placed inline in the HTML source, such as this:
+当 `default-src` 或r `script-src*` 指令被激活时，CSP默认禁用HTML源代码中内联的任何JavaScript代码，例如：
 
 ```javascript
 <script>
@@ -330,26 +335,28 @@ var foo = "314"
 <script>
 ```
 
-The inline code can be moved to a separate JavaScript file and the code in the page becomes:
+内联代码可以移动到单独的JavaScript文件中，页面中的代码变成：
 
 ```javascript
 <script src="app.js">
 </script>
 ```
 
-With `app.js` containing the `var foo = "314"` code.
+使用 `app.js` 包含` var foo = "314"` 代码。 
 
-The inline code restriction also applies to `inline event handlers`, so that the following construct will be blocked under CSP:
+内联代码限制也适用于`内联事件处理程序`，因此以下构造将在CSP下被阻止： 
 
 ```html
 <button id="button1" onclick="doSomething()">
 ```
 
-This should be replaced by `addEventListener` calls:
+这应替换为`addEventListener`调用：
 
 ```javascript
 document.getElementById("button1").addEventListener('click', doSomething);
 ```
+
+([D] 定义于DOM中的无论时js代码，或者各种事件都会无效，可以通过提取到单独的JS文件中，利用各种事件监听来实现对应的功能 )
 
 ## 引用
 
