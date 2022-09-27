@@ -1,6 +1,6 @@
-# DOM based XSS Prevention Cheat Sheet
+# 防范基于DOM的XSS
 
-## Introduction
+## 介绍
 
 When looking at XSS (Cross-Site Scripting), there are three generally recognized forms of [XSS](https://owasp.org/www-community/attacks/xss/):
 

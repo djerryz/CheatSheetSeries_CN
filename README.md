@@ -12,7 +12,7 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
 
 >Total Docs: 75篇
 >
->Finish: 13篇
+>Finish: 14篇
 
 下面的分类基于个人认知，为了方便整理相关内容和透视知识点。 
 
@@ -22,45 +22,37 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
   * 业务功能
     * [忘记密码](./cheatsheets/Forgot_Password_Cheat_Sheet.md) - 100%
     * [选用安全问题](./cheatsheets/Choosing_and_Using_Security_Questions_Cheat_Sheet.md) - 100%
-    
   * 枚举
     * [防范凭证填充(撞库)](./cheatsheets/Credential_Stuffing_Prevention_Cheat_Sheet.md) - 100%
     
     * [防范不安全的直接对象引用(IDOR)](./cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.md) - 100%, update 2021.12.07
-    
   * 注入
     * [防范注入](./cheatsheets/Injection_Prevention_Cheat_Sheet.md) - 100%
     * [防范LDAP注入](./cheatsheets/LDAP_Injection_Prevention_Cheat_Sheet.md) - 100%
     * [防范OS命令注入](./cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.md) - 100%
     * [防范SQL注入](./cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.md) - 100%
-    
   * 浏览器
     * [防范点击劫持](./cheatsheets/Clickjacking_Defense_Cheat_Sheet.md) - 100%
     * [内容安全策略](./cheatsheets/Content_Security_Policy_Cheat_Sheet.md) - 100%
     * [防范跨站请求伪造(CSRF)](./cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.md) - 100%
+    * [防范跨站泄露(xs-leak)](./cheatsheets/XS_Leaks_Cheat_Sheet.md) - 100%
+    * [防范XSS](./cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.md) - 100% | commit:  [e3a4f9f](https://github.com/OWASP/CheatSheetSeries/commit/e3a4f9f251435d4d4eb6bead11915747775f3cd2) on 19 Jul
     * [防范基于DOM的XSS](./cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.md) - 1%
     * [XSS过滤绕过(逃逸)](./cheatsheets/XSSFilterEvasionCheatSheet.md) - 1%
-    * [防范XSS](./cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.md) - 1%
-    * [防范跨站泄露(xs-leak)](./cheatsheets/XS_Leaks_Cheat_Sheet.md) - 100%
-    
   * 文件操作
-
+  
     * [文件上传](./cheatsheets/File_Upload_Cheat_Sheet.md) - 1%
-
   * (反)序列化操作
-
+  
     * [反序列化](./cheatsheets/Deserialization_Cheat_Sheet.md) - 100%
-
   * 网络操作
 
     * [防范服务端请求伪造(SSRF)](./cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.md) - 1%
-
   * 典型问题
   
     * [自动绑定(变量覆盖)](./cheatsheets/Mass_Assignment_Cheat_Sheet.md) - 1%
     * [防范未验证的重定向和转发](./cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.md) - 100%
     * [防范XML外部实体(XXE)](./cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md) - 1%
-  
 * 设计安全
 
   *  基础架构
@@ -81,7 +73,6 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
     * [参数化查询](./cheatsheets/Query_Parameterization_Cheat_Sheet.md) - 1%
   * 兜底/应急机制
     * [虚拟补丁](./cheatsheets/Virtual_Patching_Cheat_Sheet.md) - 1%
-
 * 服务安全
 
   * 数据库服务
@@ -95,7 +86,6 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
     * [docker安全](./cheatsheets/Docker_Security_Cheat_Sheet.md) - 1% 
     * [Kubernetes安全](./cheatsheets/Kubernetes_Security_Cheat_Sheet.md) - 1%
     * [NodeJS docker](./cheatsheets/NodeJS_Docker_Cheat_Sheet.md) - 1%
-
 * 基础/组件安全
 
   * 可用性
@@ -115,7 +105,6 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
     * [第三方JavaScript(依赖库)管理](./cheatsheets/Third_Party_Javascript_Management_Cheat_Sheet.md) - 1%
     * [脆弱依赖管理](./cheatsheets/Vulnerable_Dependency_Management_Cheat_Sheet.md) - 1%
     * [npm安全](./cheatsheets/npm_Security_CheatSheet.md) - 1%
-
 * 语言安全
   * JS
     * [Nodejs安全](./cheatsheets/Nodejs_Security_Cheat_Sheet.md) - 1%
@@ -137,7 +126,6 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
     * [保护级联样式](./cheatsheets/Securing_Cascading_Style_Sheets_Cheat_Sheet.md) - 1%
   * 通用
     * [安全断言标记语言(SAML)](./cheatsheets/SAML_Security_Cheat_Sheet.md) - 1%
-  
 * 安全管控
   * [访问控制](./cheatsheets/Access_Control_Cheat_Sheet.md) - 50%
   * [密钥管理](./cheatsheets/Key_Management_Cheat_Sheet.md) - 1%
@@ -146,7 +134,6 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
   * [多因素认证](./cheatsheets/Multifactor_Authentication_Cheat_Sheet.md) - 1%
   * [授权](./cheatsheets/Authorization_Cheat_Sheet.md) - 1%
   * [业务授权](./cheatsheets/Transaction_Authorization_Cheat_Sheet.md) - 1%
-  
 * SDL流程
   * [基线(恶意)用例](./cheatsheets/Abuse_Case_Cheat_Sheet.md) - 20%
   * 需求: [D]安全需求基线
@@ -155,14 +142,11 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
   * 编码: [D]扫描、审计
   * 转测: [D]渗透测试
   * 转测: [D]漏洞回归
-  
 * 安全自动化
 
   * [授权测试自动化](./cheatsheets/Authorization_Testing_Automation_Cheat_Sheet.md) - 1%
-
 * 安全运营
   * [漏洞披露](./cheatsheets/Vulnerability_Disclosure_Cheat_Sheet.md) - 1%
-  
 * 安全合规
   * [用户隐私保护](./cheatsheets/User_Privacy_Protection_Cheat_Sheet.md) - 1%
   * [D]网络安全法 - 1%
