@@ -1,10 +1,8 @@
-# OWASP 安全速查/备忘表
+# OWASP 安全备忘表
 
-Origin/原文: [CheatSheetSeries](https://github.com/OWASP/CheatSheetSeries).
+Origin/原文: [CheatSheetSeries](https://github.com/OWASP/CheatSheetSeries) ，适用于安全开发方向，专业且全面的技术参考资料。
 
-OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、开发、设计、SDL等多个方向的技术人员阅读。遂决定对其进行完整的翻译，一来锻炼自己的英语能力，二来可以查漏补缺。Enjoy!
-
-**说明: 标题和文章内容中的标记[D], 属译者补充内容，通常认为存在欠缺知识点或原文难于理解时，会打上标记并进行内容补充，以便阅读理解**
+**说明: 标记[D], 属译者补充内容，译者认为原文存在知识点欠缺或难于理解时，会打上标记并补充理解性内容**
 
 
 
@@ -12,11 +10,6 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
 
 >Total Docs: 75篇
 >
->Finish: 14篇
-
-下面的分类基于个人认知，为了方便整理相关内容和透视知识点。 
-
-欢迎有不同的分类思考，文章若为肉，分类即为体，好的形体会带来新的认知和阅读体验。
 
 * 常见安全问题
   * 业务功能
@@ -149,20 +142,9 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
   * [漏洞披露](./cheatsheets/Vulnerability_Disclosure_Cheat_Sheet.md) - 1%
 * 安全合规
   * [用户隐私保护](./cheatsheets/User_Privacy_Protection_Cheat_Sheet.md) - 1%
-  * [D]网络安全法 - 1%
+  * [[D]网络安全法](./self_cheatsheets/网络安全法.md) - 100%
 
 
-
-## 更迭方案
-
-对照原文更新时间点: 2021.12.07。
-
-以当前commit为起点，脚本检查cheatsheets, assets目录变更情况，人工对变更的文件和内容进行翻译与更新后，重置起点。
-
-文章中的"待规划" 代表原文该处标记未来补充或者和前面重复，待原文补充后再进行翻译。
-
-* PDF: 待规划
-* 在线阅读: 待规划
 
 
 
@@ -179,9 +161,3 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
 ## 翻译团队
 
 * Djerryz
-
-
-
-## 建议与反馈
-
-任何翻译，文字语法上的错误，或技术细节，欢迎提交issue进行探讨。
