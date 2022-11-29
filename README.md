@@ -37,7 +37,7 @@ OWASP CheatSheet 的内容是专业，全面且简练的,  适合安全攻防、
     * [防范跨站请求伪造(CSRF)](./cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.md) - 100%
     * [防范跨站泄露(xs-leak)](./cheatsheets/XS_Leaks_Cheat_Sheet.md) - 100%
     * [防范XSS](./cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.md) - 100% | commit:  [e3a4f9f](https://github.com/OWASP/CheatSheetSeries/commit/e3a4f9f251435d4d4eb6bead11915747775f3cd2) on 19 Jul
-    * [防范基于DOM的XSS](./cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.md) - 1%
+    * [防范基于DOM的XSS](./cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.md) - 100% | commit [d2dd9d1](https://github.com/OWASP/CheatSheetSeries/commit/d2dd9d1b1c091d3b13870d27d449be6d3079634f) on Aug 7
     * [XSS过滤绕过(逃逸)](./cheatsheets/XSSFilterEvasionCheatSheet.md) - 1%
   * 文件操作
   
